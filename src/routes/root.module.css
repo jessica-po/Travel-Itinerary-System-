@@ -1,0 +1,47 @@
+/* .navbar {
+    display: flex;
+} */
+
+.container {
+    background-color: #f4f4f4;
+    width: 100vw;
+    min-height: 100vh;
+}
+
+.navbar {
+    background-color: white;
+    padding: 1rem 0;
+    border-bottom: 1px solid black;
+}
+
+ul {
+    color: black;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    list-style: none;
+}
+
+h1.logo {
+    display: inline-block;
+    font-size: 2rem;
+    flex: 1 1;
+    margin: 0
+}
+
+ul > li {
+    display: inline-block;
+    flex: 1 2;
+    font-size: 1.5rem;
+}
+
+.nav-item {
+    color: black;
+    padding: 1rem;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+
+.nav-item:hover {
+    background-color: #bbb;
+}
