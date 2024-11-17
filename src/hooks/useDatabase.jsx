@@ -5,6 +5,14 @@ import { useState } from "react";
 const useDatabase = () => {
     const [ supabase, _ ] = useState(createClient(url, publicAnonKey));
 
+    const getEvents = async () => {
+        const { data, error } = await supabase
+            .from('event')  // Fetch from 'event' table
+            .select();
+
+        return { data, error };
+    };
+
     const getItineraries = async () => {
         const { data, error } = await supabase
             .from('itinerary')
@@ -12,7 +20,7 @@ const useDatabase = () => {
 
         return { data, error }
     }
-    return { getItineraries }
+    return { getItineraries, getEvents }
 };
 
 export default useDatabase;
