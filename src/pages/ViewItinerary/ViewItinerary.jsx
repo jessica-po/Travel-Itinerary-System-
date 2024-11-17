@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet, useParams} from "react-router-dom";
+import { Link, useParams} from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import styles from './ViewItinerary.module.css';
 import useAuth from "../../hooks/useDatabase";
