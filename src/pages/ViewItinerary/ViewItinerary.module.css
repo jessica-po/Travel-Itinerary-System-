@@ -1,0 +1,19 @@
+.viewItinerary {
+    display: flex;
+	flex-direction: column;
+	font-family: Arial, sans-serif;
+	background-color: #f9f9f9;
+	padding: 20px;
+}
+
+.buttons {
+    justify-self: left;
+}
+
+.itineraryImage {
+	width: 150px;
+	height: 150px;
+	object-fit: cover;
+	border-radius: 8px;
+	margin-right: 20px;
+}

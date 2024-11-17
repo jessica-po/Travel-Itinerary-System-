@@ -12,6 +12,9 @@ import SearchItinerary from './pages/SearchItinerary/SearchItinerary';
 import SavedItineraries from './pages/SavedItineraries/SavedItineraries';
 import MyItineraries from './pages/MyItineraries/MyItineraries';
 import AccountDetails from './pages/AccountDetails/AccountDetails'
+import ViewItinerary from './pages/ViewItinerary/ViewItinerary';
+import Comments from './pages/Comments/Comments';
+import ReportForm from './pages/ReportForm/ReportForm';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -23,6 +26,9 @@ const router = createBrowserRouter(
       <Route path="register" element={<Register />} />
       <Route path="login" element={<Login />} />
       <Route path="search-itinerary" element={<SearchItinerary />} />
+      <Route path="/view-itinerary/:postId" element={<ViewItinerary />} />
+      <Route path="/comments/:postId" element={<Comments />} />
+      <Route path="/report-form/:postId" element={<ReportForm />} />
     </Route>
   ),
 );

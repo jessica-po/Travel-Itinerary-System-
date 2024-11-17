@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./SearchItinerary.module.css";
 import useAuth from "../../hooks/useDatabase";
+import { Link } from "react-router-dom"; // Import Link
 
 export default function SearchItinerary() {
 	const [itineraries, setItineraries] = useState([]);
@@ -97,21 +98,23 @@ export default function SearchItinerary() {
 				<div className={styles.itineraryContent}>
 					<div className={styles.itineraryList}>
 						{filteredItineraries.map((itinerary) => (
-							<div key={itinerary.post_id} className={styles.itineraryCard}>
-								<img src={itinerary.image_url} alt={itinerary.post_name} className={styles.itineraryImage} />
-								<div className={styles.itineraryInfo}>
-									<h3>{itinerary.post_name}</h3>
-									<div className={styles.destination}>{itinerary.destination}</div>
-									<div className={styles.description}>{itinerary.description}</div>
-									<div className={styles.details}>
-										<span>Duration: {itinerary.duration} days</span>
-										<span>
-											Price Range: ${itinerary.price_low} - ${itinerary.price_high}
-										</span>
-										<span>{itinerary.is_family_friendly ? "Family Friendly" : "Not Family Friendly"}</span>
+							<Link to={`/view-itinerary/${itinerary.post_id}`}>
+								<div key={itinerary.post_id} className={styles.itineraryCard}>
+									<img src={itinerary.image_url} alt={itinerary.post_name} className={styles.itineraryImage} />
+									<div className={styles.itineraryInfo}>
+										<h3>{itinerary.post_name}</h3>
+										<div className={styles.destination}>{itinerary.destination}</div>
+										<div className={styles.description}>{itinerary.description}</div>
+										<div className={styles.details}>
+											<span>Duration: {itinerary.duration} days</span>
+											<span>
+												Price Range: ${itinerary.price_low} - ${itinerary.price_high}
+											</span>
+											<span>{itinerary.is_family_friendly ? "Family Friendly" : "Not Family Friendly"}</span>
+										</div>
 									</div>
 								</div>
-							</div>
+							</Link>
 						))}
 					</div>
 				</div>
