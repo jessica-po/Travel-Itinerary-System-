@@ -29,6 +29,7 @@ const router = createBrowserRouter(
       <Route path="/view-itinerary/:postId" element={<ViewItinerary />} />
       <Route path="/comments/:postId" element={<Comments />} />
       <Route path="/report-form/:postId" element={<ReportForm />} />
+      <Route path="home" element={<Home />} />
     </Route>
   ),
 );

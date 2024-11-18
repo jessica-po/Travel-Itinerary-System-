@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { createClient } from '@supabase/supabase-js';
 import { Link, useNavigate } from 'react-router-dom';
@@ -69,17 +70,6 @@ const supabase = createClient(
         }); 
 
         if (authError) throw authError;
-
-        // insert
-        const { error: insertError} = await supabase
-            .from('profile')
-            .insert([{
-                user_id: supabase.auth.getUser().id,
-                first_name: formData.firstName,
-                last_name: formData.lastName,
-                role: 'traveller',
-                profile_status: 'normal'
-            }]);
 
             setFormData({password: '', confirmPassword: '', firstName: '', lastName: '', email: ''});
             setError('Successful Registration! Please Login Now!');
@@ -169,5 +159,6 @@ return (
         </div>
 );
 }
+
 
 
