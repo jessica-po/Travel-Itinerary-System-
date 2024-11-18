@@ -15,8 +15,6 @@ export default function Home() {
     }, []);
 
     useEffect(() => {
-        // if (itineraries.length === 0) return;
-
         updateItineraryRatings();
     }, [ratings]);
 
@@ -50,10 +48,6 @@ export default function Home() {
     };
 
     const updateItineraryRatings = () => {
-        // console.log(1);
-        // console.log(itineraries);
-        // console.log(ratings);
-        // console.log(addItineraryRatings());
         setItineraries(
             addItineraryRatings()
             .sort((a, b) => {
