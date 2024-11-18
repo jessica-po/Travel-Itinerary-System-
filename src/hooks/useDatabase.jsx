@@ -20,7 +20,16 @@ const useDatabase = () => {
 
         return { data, error }
     }
-    return { getItineraries, getEvents }
+
+    const getRatings = async () => {
+        const { data, error } = await supabase
+            .from('post_ratings')
+            .select();
+        
+        return { data, error }
+    }
+
+    return { getItineraries, getEvents, getRatings }
 };
 
 export default useDatabase;

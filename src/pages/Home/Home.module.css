@@ -1,0 +1,33 @@
+.itineraryTable, .itineraryTable th, .itineraryTable td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.itineraryImage {
+    width: 320px;
+    height: 180px;
+}
+
+.ratingContainer {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.ratingIcon {
+    flex: 0 0 30%;
+}
+
+.rating {
+    display: inline-block;
+    flex: 0 1 50%;
+    margin: 0;
+}
+
+.ratingCount {
+    display: inline-block;
+    flex-basis: 80%;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #666;
+}
