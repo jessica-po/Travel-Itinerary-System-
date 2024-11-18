@@ -61,10 +61,11 @@ const supabase = createClient(
             options: {
                 data: {
                     email_confirmed: true,
-                    first_name: formData.firstName, //maybe 
-                    last_name: formData.lastName //maybe 
+                    first_name: formData.firstName, 
+                    last_name: formData.lastName 
                 }
             }
+        
         }); 
 
         if (authError) throw authError;
@@ -73,26 +74,16 @@ const supabase = createClient(
         const { error: insertError} = await supabase
             .from('profile')
             .insert([{
-                user_id: authData.user.id,
+                user_id: supabase.auth.getUser().id,
                 first_name: formData.firstName,
                 last_name: formData.lastName,
-                //email: formData.email,
                 role: 'traveller',
                 profile_status: 'normal'
             }]);
 
-            if (insertError) {
-                // Clean up auth user if profile creation fails
-                await supabase.auth.admin.deleteUser(authData.user.id);
-                throw insertError;
-              }
-
             setFormData({password: '', confirmPassword: '', firstName: '', lastName: '', email: ''});
-            navigate('/login', {
-                state: {
-                    message: 'Registration successful! Please log in.'
-                }
-            });
+            setError('Successful Registration! Please Login Now!');
+
     } catch (err) {
         setError(err.message);
     }   finally {
