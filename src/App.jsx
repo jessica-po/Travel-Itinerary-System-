@@ -15,6 +15,7 @@ import AccountDetails from './pages/AccountDetails/AccountDetails'
 import ViewItinerary from './pages/ViewItinerary/ViewItinerary';
 import Comments from './pages/Comments/Comments';
 import ReportForm from './pages/ReportForm/ReportForm';
+import CreateItinerary from './pages/CreateItinerary/CreateItinerary';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -22,6 +23,7 @@ const router = createBrowserRouter(
       <Route index element={<Home />} />
       <Route path="saved-itineraries" element={<SavedItineraries />} />
       <Route path="my-itineraries" element={<MyItineraries />} />
+      <Route path="create-itinerary" element={<CreateItinerary/>} />
       <Route path="account" element={<AccountDetails />} />
       <Route path="register" element={<Register />} />
       <Route path="login" element={<Login />} />
