@@ -1,3 +1,27 @@
+.ratingContainer {
+    display: inline-flex;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.ratingIcon {
+    flex: 0 0 30%;
+}
+
+.rating {
+    display: inline-block;
+    flex: 0 1 50%;
+    margin: 0;
+}
+
+.ratingCount {
+    display: inline-block;
+    flex-basis: 80%;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #666;
+}
+
 .search-itinerary {
 	display: flex;
 	flex-direction: column;
