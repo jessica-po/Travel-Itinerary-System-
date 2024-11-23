@@ -52,11 +52,14 @@ export default function Home() {
         setItineraries(
             addItineraryRatings()
             .sort((a, b) => {
-                let a_rating = a.good_count / (a.good_count + a.bad_count);
-                let b_rating = b.good_count / (b.good_count + b.bad_count);
+                let a_num_ratings = a.good_count + a.bad_count;
+                let b_num_ratings = b.good_count + b.bad_count;
+                let a_rating = a.good_count / a_num_ratings;
+                let b_rating = b.good_count / b_num_ratings;
                 if (isNaN(a_rating) && isNaN(b_rating)) return 0;
                 if (isNaN(a_rating)) return 1;
                 if (isNaN(b_rating)) return -1;
+                if (a_rating === b_rating) return b_num_ratings - a_num_ratings;
                 
                 return b_rating - a_rating;
             })
