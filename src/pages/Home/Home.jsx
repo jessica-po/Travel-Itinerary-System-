@@ -3,6 +3,7 @@ import styles from './Home.module.css';
 import useAuth from "../../hooks/useDatabase";
 import { Link } from "react-router-dom";
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import { Button, Card, CardActionArea, CardActions, CardContent, CardMedia, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 
 export default function Home() {
     const [ itineraries, setItineraries ] = useState([]);
@@ -42,8 +43,8 @@ export default function Home() {
     const addItineraryRatings = () => {
         return itineraries.map(itinerary => ({
             ...itinerary,
-            good_count: ratings.find(r => r.post_id === itinerary.post_id && r.is_good)?.total || 0,
-            bad_count: ratings.find(r => r.post_id === itinerary.post_id && !r.is_good)?.total || 0
+            good_count: ratings.filter(r => r.post_id === itinerary.post_id && r.is_good)?.length || 0,
+            bad_count: ratings.filter(r => r.post_id === itinerary.post_id && !r.is_good)?.length || 0
         }))
     };
 
@@ -64,40 +65,47 @@ export default function Home() {
 
     return (
         <div className="home">
-            <div>
-                <h2>Welcome to Travel Itineraries!</h2>
-                <p>Here you can find all the best itinerary plans, made for travellers like you, by travellers like you.</p>    
-            </div>
-            
-            <div className="itineraries">
-                <h2>Featured Itinerary</h2>
-                <div className="featuredItinerary">
-                    <Link to={`/view-itinerary/${itineraries[0]?.post_id}`}>
-                        <img src={itineraries[0]?.image_url} alt={itineraries[0]?.post_name} className={styles.itineraryImage} />
-                        <p>{itineraries[0]?.post_name || itineraries[0]?.destination}</p>
-                        <p></p>
-                    </Link>
-                </div>
-                
-                <h2>More Itineraries</h2>
-                <div className="otherItineraries">
-                    <table className={styles.itineraryTable}>
-                        <thead>
-                            <tr>
-                                <th>Itinerary</th>
-                                <th>Rating</th>
-                            </tr>
-                        </thead>
+            <Stack spacing={5}>
+                <Card>
+                    <CardContent>
+                        <Typography variant="h2">Welcome to Travel Itineraries!</Typography>
+                        <Typography variant="subtitle1">Here you can find all the best itinerary plans, made for travellers like you, by travellers like you.</Typography>
+                    </CardContent>
+                </Card>
 
-                        <tbody>
-                            {itineraries.slice(1).map(itinerary =>
-                                <tr key={itinerary.post_id}>
-                                        <td>
-                                            <Link to={`/view-itinerary/${itinerary.post_id}`} key={itinerary.post_id}>
+                <Card variant="outlined">
+                    <CardActionArea href={`/view-itinerary/${itineraries[0]?.post_id}`}>
+                        <CardContent>
+                            <Typography variant="h3">{itineraries[0]?.post_name || itineraries[0]?.destination}</Typography>
+                            <Typography variant="overline">Featured Itinerary</Typography>
+                            <CardMedia component="img" height="500" image={itineraries[0]?.image_url} />
+                        </CardContent>
+                        <CardActions>
+                            <Button>
+                                View this itinerary
+                            </Button>
+                        </CardActions>
+                    </CardActionArea>
+                </Card>
+
+                <Card>
+                    <CardContent>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Itinerary</TableCell>
+                                    <TableCell>Rating</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {itineraries.slice(1).map(itinerary =>
+                                    <TableRow key={itinerary.post_id} hover>
+                                        <TableCell>
+                                            <Link to={`/view-itinerary/${itinerary.post_id}`}>
                                                 {itinerary.post_name || itinerary.destination}
                                             </Link>
-                                        </td>
-                                        <td>
+                                        </TableCell>
+                                        <TableCell>
                                             { itinerary.good_count + itinerary.bad_count > 0 ? <div className={styles.ratingContainer}>
                                                 <ThumbUpIcon className={styles.ratingIcon} />
                                                 <span className={styles.rating}>
@@ -109,13 +117,14 @@ export default function Home() {
                                             </div> : <>
                                                 No Ratings
                                             </>}
-                                        </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </Stack>
         </div>
     );
 }
