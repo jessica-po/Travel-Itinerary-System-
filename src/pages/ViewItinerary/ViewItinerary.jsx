@@ -1,20 +1,20 @@
 import { Link, useParams} from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import styles from './ViewItinerary.module.css';
-import useAuth from "../../hooks/useDatabase";
 import { Button, ButtonGroup } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
+import useSupabase from "../../context/SupabaseContext";
 
 export default function ViewItinerary() {
     const { postId } = useParams();
     const [ events, setEvents] = useState([]);
-    const { getItineraries, getEvents, getRatings, upsertRating, insertReport, insertRating, getLoggedInUser } = useAuth();
+    const { getItineraries, getEvents, getRatings, upsertRating, insertReport, insertRating, user } = useSupabase();
     const [ filteredEvents, setFilteredEvents] = useState([]);
     const [ itinerary, setItinerary] = useState({});
     const [ myRating, setMyRating ] = useState([]);
-    const [userId, setUserId] = useState(null);
+    // const [userId, setUserId] = useState(null);
     //const [myRateIsGood, setMyRateIsGood] = useState(false);
     const [ googleCalendarUrl, setGoogleCalendarUrl ] = useState("https://calendar.google.com/calendar/u/0/r/eventedit")
 
@@ -23,19 +23,20 @@ export default function ViewItinerary() {
         if (postId) {
             loadEvents();
             loadItineraries();
-            const fetchUser = async () => {
-                const { user, error } = await getLoggedInUser();
-                if (error || !user) {
-                    console.error("Error fetching user:", error);
-                } else {
-                    setUserId(user.id);
-                    if (userId) {loadMyRating()};
+            if (user.id) loadMyRating();
+            // const fetchUser = async () => {
+            //     const { user, error } = await getLoggedInUser();
+            //     if (error || !user) {
+            //         console.error("Error fetching user:", error);
+            //     } else {
+            //         setUserId(user.id);
+            //         if (userId) {loadMyRating()};
                     
-                }
-            };
-            fetchUser();
+            //     }
+            // };
+            // fetchUser();
         }
-    }, [postId, userId]);
+    }, [postId, user]);
 
     useEffect(() => {
         if (filteredEvents.length > 0 && itinerary.post_id) {
@@ -66,7 +67,7 @@ export default function ViewItinerary() {
     const loadMyRating = async () => {
         const { data, error } = await getRatings();
         if (!error) {
-            const matchedRating = data.find(rating => rating.user_id === userId);
+            const matchedRating = data.find(rating => rating.user_id === user.id);
             setMyRating(matchedRating); 
         } else {
             console.error("Error fetching myRating:", error);
@@ -80,7 +81,7 @@ export default function ViewItinerary() {
 
     const handleSubmit = async (e, myRateIsGood) => {
         e.preventDefault();
-        if (!userId) {
+        if (!user.id) {
           alert("You must be logged in to rate.");
           return;
         }
@@ -89,7 +90,7 @@ export default function ViewItinerary() {
 
         try {
         const newRating = {
-          user_id: userId,
+          user_id: user.id,
           post_id: postId,
           is_good: myRateIsGood
         }; 

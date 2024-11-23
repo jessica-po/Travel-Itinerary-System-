@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./CreateItinerary.module.css";
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, Checkbox, FormControlLabel } from "@mui/material";
-import useAuth from "../../hooks/useDatabase";
+import useSupabase from "../../context/SupabaseContext";
 
 export default function CreateItinerary() {
   const navigate = useNavigate();
@@ -16,22 +16,21 @@ export default function CreateItinerary() {
   const [isFamilyFriendly, setIsFamilyFriendly] = useState(false);
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const { uploadImage, getLoggedInUser, insertEvents, insertItinerary } = useAuth();
+  // const [userId, setUserId] = useState(null);
+  const { uploadImage, user, insertEvents, insertItinerary } = useSupabase();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { user, error } = await getLoggedInUser();
-      if (error || !user) {
-        console.error("Error fetching user:", error);
-        alert("Please log in to create an itinerary.");
-        navigate("/login");
-      } else {
-        setUserId(user.id);
-      }
-    };
-    fetchUser();
-  }, [getLoggedInUser, navigate]);
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     if (error || !user) {
+  //       console.error("Error fetching user:", error);
+  //       alert("Please log in to create an itinerary.");
+  //       navigate("/login");
+  //     } else {
+  //       setUserId(user.id);
+  //     }
+  //   };
+  //   fetchUser();
+  // }, [getLoggedInUser, navigate]);
 
   const handleScheduleChange = (index, field, value) => {
     const updatedSchedule = [...schedule];
@@ -133,7 +132,7 @@ export default function CreateItinerary() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!userId) {
+    if (!user.id) {
       alert("You must be logged in to create an itinerary.");
       return;
     }
@@ -149,7 +148,7 @@ export default function CreateItinerary() {
 
     // Insert the itinerary
     const newItinerary = {
-      user_id: userId,
+      user_id: user.Id,
       post_name: itineraryName,
       destination,
       price_low: priceLow,

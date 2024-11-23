@@ -1,9 +1,11 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import styles from './root.module.css';
-import useAuth from "../hooks/useDatabase";
+import useSupabase from "../context/SupabaseContext";
 
 
 export default function Root() {
+    const { user } = useSupabase();
+
     return (
         <>
             <div className={styles["root-layout"]}>
@@ -17,36 +19,44 @@ export default function Root() {
                                         <h1 className={styles.logo}>Travel Itinerary</h1>
                                     </NavLink>
                                 </li>
-                                <li>
-                                    <NavLink to="/saved-itineraries" className={styles["nav-item"]}>
-                                        Saved Itineraries
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink to="/admin-search" className={styles["nav-item"]}>
-                                        Admin Search
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink to="/my-itineraries" className={styles["nav-item"]}>
-                                        My Itineraries
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink to="/account" className={styles["nav-item"]}>
-                                        My Account
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink to="/register" className={styles["nav-item"]}>
-                                        Register
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink to="/login" className={styles["nav-item"]}>
-                                        Login
-                                    </NavLink>
-                                </li>
+                                {
+                                    user && <>
+                                        <li>
+                                            <NavLink to="/saved-itineraries" className={styles["nav-item"]}>
+                                                Saved Itineraries
+                                            </NavLink>
+                                        </li>
+                                        <li>
+                                            <NavLink to="/admin-search" className={styles["nav-item"]}>
+                                                Admin Search
+                                            </NavLink>
+                                        </li>
+                                        <li>
+                                            <NavLink to="/my-itineraries" className={styles["nav-item"]}>
+                                                My Itineraries
+                                            </NavLink>
+                                        </li>
+                                        <li>
+                                            <NavLink to="/account" className={styles["nav-item"]}>
+                                                My Account
+                                            </NavLink>
+                                        </li>
+                                    </>
+                                }
+                                {
+                                    !user && <>
+                                        <li>
+                                            <NavLink to="/register" className={styles["nav-item"]}>
+                                                Register
+                                            </NavLink>
+                                        </li>
+                                        <li>
+                                            <NavLink to="/login" className={styles["nav-item"]}>
+                                                Login
+                                            </NavLink>
+                                        </li>
+                                    </>
+                                }
                                 <li>
                                     <NavLink to="/search-itinerary" className={styles["nav-item"]}>
                                         Find Itineraries

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import styles from "./SearchItinerary.module.css";
-import useAuth from "../../hooks/useDatabase";
 import { Link } from "react-router-dom"; // Import Link
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import useSupabase from "../../context/SupabaseContext";
 
 export default function SearchItinerary() {
 	const [ itineraries, setItineraries ] = useState([]);
 	const [ ratings, setRatings ] = useState([]);
-	const { getItineraries, getRatings } = useAuth();
+	const { getItineraries, getRatings } = useSupabase();
 	const [filters, setFilters] = useState({
 		searchQuery: "",
 		minDuration: "",

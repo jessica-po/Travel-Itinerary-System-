@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import styles from './AdminSearch.module.css';
-import useAuth from "../../hooks/useDatabase";
-import { Link } from "react-router-dom"; // Import Link
+import { Link } from "react-router-dom";
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import FlagIcon from '@mui/icons-material/Flag';
+import useSupabase from "../../context/SupabaseContext";
 
 export default function AdminSearch() {
 	const [ itineraries, setItineraries ] = useState([]);
 	const [ ratings, setRatings ] = useState([]);
-	const { getItineraries, getRatings, getReports } = useAuth();
+	const { getItineraries, getRatings, getReports } = useSupabase();
 	const [ reports, setReports ] = useState([]);
 	const [filters, setFilters] = useState({
 		searchQuery: "",

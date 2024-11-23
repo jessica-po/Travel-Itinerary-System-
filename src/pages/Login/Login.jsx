@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from 'react-router-dom';
-import { createClient } from '@supabase/supabase-js';
 import styles from './Login.module.css';
-
-// Initialize Supabase client
-const supabase = createClient(
-    'https://dnchewmkolgjlitgxxui.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuY2hld21rb2xnamxpdGd4eHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEzNDA4NzcsImV4cCI6MjA0NjkxNjg3N30.YbEkcVK1-m5qen6udcLC9Op3weQA6DD9nygqQ5cvOwo' // Make sure to use environment variables for this!
-);
+import useSupabase from "../../context/SupabaseContext";
 
 export default function Login() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const { login } = useSupabase();
 
     useEffect(() => {
         document.title = "Login - Travel Itineraries";
@@ -32,17 +27,15 @@ export default function Login() {
         }
 
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { data, error } = await login({
                 email: formData.email,
-                password: formData.password,
+                password: formData.password
             });
 
             if (error) throw error;
 
-            // Get the user data correctly
-            const userResponse = await supabase.auth.getUser();
-            const user = userResponse.data.user;
-            console.log(user);
+            // Show the (correct) user data
+            console.log(data.user);
 
             // Clear form data
             setFormData({ email: '', password: '' });

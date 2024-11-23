@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import styles from "./MyItineraries.module.css";
-import useAuth from "../../hooks/useDatabase";
+import useSupabase from "../../context/SupabaseContext";
 
 export default function MyItineraries() {
   const [itineraries, setItineraries] = useState([]);
-  const [userId, setUserId] = useState(null);
-  const { getUserItineraries, getLoggedInUser } = useAuth();
+  // const [userId, setUserId] = useState(null);
+  const { getUserItineraries, user } = useSupabase();
   const [filters, setFilters] = useState({
     searchQuery: "",
     minDuration: "",
@@ -18,25 +18,25 @@ export default function MyItineraries() {
   const navigate = useNavigate();
 
   // Fetch logged-in user and set userId
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { user, error } = await getLoggedInUser();
-      if (error || !user) {
-        console.error("Error fetching user:", error);
-        alert("Please log in to view your itineraries.");
-        navigate("/login");
-      } else {
-        setUserId(user.id); // Set the logged-in user's ID
-      }
-    };
-    fetchUser();
-  }, [getLoggedInUser, navigate]);
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     const { user, error } = await getLoggedInUser();
+  //     if (error || !user) {
+  //       console.error("Error fetching user:", error);
+  //       alert("Please log in to view your itineraries.");
+  //       navigate("/login");
+  //     } else {
+  //       setUserId(user.id); // Set the logged-in user's ID
+  //     }
+  //   };
+  //   fetchUser();
+  // }, [getLoggedInUser, navigate]);
 
   // Load itineraries for the logged-in user
   useEffect(() => {
-    if (!userId) return; // Don't fetch itineraries until userId is set
+    if (!user.id) return; // Don't fetch itineraries until userId is set
     const loadUserItineraries = async () => {
-      const { data, error } = await getUserItineraries(userId);
+      const { data, error } = await getUserItineraries(user.id);
       if (!error) {
         setItineraries(data); // Set the itineraries for the user
       } else {
@@ -44,7 +44,7 @@ export default function MyItineraries() {
       }
     };
     loadUserItineraries();
-  }, [userId, getUserItineraries]);
+  }, [user, getUserItineraries]);
 
   // Function to handle navigation to the form page
   const handleCreateItinerary = () => {
@@ -86,7 +86,7 @@ export default function MyItineraries() {
   });
 
   // Render based on user status
-  if (userId === null) {
+  if (user.id === null) {
     return <div>Loading...</div>;
   }
 
