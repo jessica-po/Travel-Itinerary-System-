@@ -109,8 +109,7 @@ const useDatabase = () => {
                     user_id: newRating.user_id,
                     post_id: newRating.post_id,
                     is_good: newRating.is_good,
-                    comment: newRating.comment,
-                    comment_time: newRating.comment_time,
+                    comment: newRating.comment
                 },
                 { onConflict: ['user_id', 'post_id'] } // Specify the columns that define uniqueness
             )

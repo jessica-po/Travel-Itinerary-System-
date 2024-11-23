@@ -2,6 +2,10 @@ import { Link, useParams} from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import styles from './ViewItinerary.module.css';
 import useAuth from "../../hooks/useDatabase";
+import { Button, ButtonGroup } from "@mui/material";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
 export default function ViewItinerary() {
     const { postId } = useParams();
@@ -12,7 +16,7 @@ export default function ViewItinerary() {
     const [ myRating, setMyRating ] = useState([]);
     const [userId, setUserId] = useState(null);
     //const [myRateIsGood, setMyRateIsGood] = useState(false);
-    
+    const [ googleCalendarUrl, setGoogleCalendarUrl ] = useState("https://calendar.google.com/calendar/u/0/r/eventedit")
 
     useEffect(() => {
         document.title = "View Itinerary - Travel Itineraries";
@@ -32,6 +36,12 @@ export default function ViewItinerary() {
             fetchUser();
         }
     }, [postId, userId]);
+
+    useEffect(() => {
+        if (filteredEvents.length > 0 && itinerary.post_id) {
+            setGoogleCalendarUrl(createUrl(filteredEvents, itinerary));
+        }
+    }, [filteredEvents]);
 
     const loadEvents = async () => {
         const { data, error } = await getEvents();
@@ -81,9 +91,7 @@ export default function ViewItinerary() {
         const newRating = {
           user_id: userId,
           post_id: postId,
-          is_good: myRateIsGood,
-          comment: null, 
-          comment_date: new Date().toISOString(),
+          is_good: myRateIsGood
         }; 
         
             const { data: ratingData, error: ratingError } = await upsertRating(newRating);
@@ -108,42 +116,78 @@ export default function ViewItinerary() {
 
 
 
+    const createUrl = (events, itinerary) => {
+        const sortedEvents = [...events].sort((a, b) => {
+            return a.day === b.day ? Date.parse(`0000T${a.time}`) - Date.parse(`0000T${b.time}`) : a.day - b.day;
+        });
+
+        const title = itinerary.post_name || itinerary.destination
+        const duration = sortedEvents[sortedEvents.length - 1]?.day - sortedEvents[0]?.day; + 1;
+        const description =
+            `<h1>${title}</h1>` +
+            `<p>Destination: <b>${itinerary.destination}</b></p>` +
+            `<a href=${window.location.href}>View the original post in the Itinerary System</a>\n` +
+            "<h2>Itinerary Schedule</h2>" +
+            `${sortedEvents.map(e => `Day ${e.day} @ ${e.time} - ${e.location}`).join("\n")}`
+
+        const date = new Date();
+        const todayFormattedDate = formatDate(date);
+        date.setDate(date.getDate() + duration);
+        const endFormattedDate = formatDate(date);
+
+        var url =
+            "https://calendar.google.com/calendar/u/0/r/eventedit" +
+            `?text=${encodeURI(title)}` +
+            `&dates=${todayFormattedDate}/${endFormattedDate}` +
+            `&location=${itinerary.destination}` +
+            `&details=${encodeURI(description)}`;
+
+        return url;
+    }
+
+    // formats date in yyyymmdd with leading zeros, for creating Google Calendar url
+    const formatDate = date => {
+        const yyyy = date.getFullYear();
+        let mm = date.getMonth() + 1; // Months start at 0!
+        let dd = date.getDate();
+
+        if (dd < 10) dd = '0' + dd;
+        if (mm < 10) mm = '0' + mm;
+
+        return `${yyyy}${mm}${dd}`;
+    };
 
     return (
         <div className={styles.viewItinerary}>
             <h1>{itinerary.post_name}</h1>
-            {/* Buttons*/}
-            <div>
-                <button className={styles.buttons}>
-                    Add to Google Calendar
-                </button>
-                <button className={styles.buttons}>
-                    Add to Saved Itineraries WIP
-                </button >
-                <Link to={`/report-form/${itinerary.post_id}`}>
-                    <button className={styles.buttons}>
-                        Report WIP
-                    </button>
-                </Link>
-                <Link to={`/comments/${itinerary.post_id}`}>
-                    <button className={styles.buttons}>
-                        Comments
-                    </button>
-                </Link>
-                Rating: __%
-                <button
-                    className={`${styles.rateButtons} ${(myRating?.is_good || false) ? styles.pressed : ''}`}
-                    onClick={(e) => handleSubmit(e, true)}
+            <ButtonGroup variant="contained" size="large">
+                <Button>
+                    Save Itinerary WIP
+                </Button>
+                <Button href={`/comments/${itinerary.post_id}`}>
+                    Comments
+                </Button>
+                <Button href={googleCalendarUrl} rel="noopener" target="_blank">
+                    Add to Google Calendar <OpenInNewIcon />
+                </Button>
+                <Button href={`/report-form/${itinerary.post_id}`}>
+                    Report WIP
+                </Button>
+            </ButtonGroup>
+            Rating: __%
+            <ButtonGroup>
+                <Button
+                    variant={myRating?.is_good ? "contained" : "outlined"}
+                    onClick={e => handleSubmit(e, true)}
                 >
-                    +
-                </button>
-                <button
-                    className={`${styles.rateButtons} ${(myRating?.is_good === false) ? styles.pressed : ''}`}
-                    onClick={(e) => handleSubmit(e, false)}
+                    <ThumbUpIcon />
+                </Button>
+                <Button variant={myRating?.is_good === false ? "contained" : "outlined"}
+                    onClick={e => handleSubmit(e, false)}
                 >
-                    -
-                </button>
-            </div>
+                    <ThumbDownIcon />
+                </Button>
+            </ButtonGroup>
             <div className={styles.eventsContainer}>
                 <table className={styles.itineraryTable}>
                         <thead>
