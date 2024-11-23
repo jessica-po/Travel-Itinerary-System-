@@ -5,18 +5,33 @@ import useAuth from "../../hooks/useDatabase";
 
 export default function ViewItinerary() {
     const { postId } = useParams();
-    const [events, setEvents] = useState([]);
-    const { getItineraries, getEvents } = useAuth();
-    const [filteredEvents, setFilteredEvents] = useState([]);
-    const [itinerary, setItinerary] = useState({});
+    const [ events, setEvents] = useState([]);
+    const { getItineraries, getEvents, getRatings, upsertRating, insertReport, insertRating, getLoggedInUser } = useAuth();
+    const [ filteredEvents, setFilteredEvents] = useState([]);
+    const [ itinerary, setItinerary] = useState({});
+    const [ myRating, setMyRating ] = useState([]);
+    const [userId, setUserId] = useState(null);
+    //const [myRateIsGood, setMyRateIsGood] = useState(false);
+    
 
     useEffect(() => {
         document.title = "View Itinerary - Travel Itineraries";
         if (postId) {
             loadEvents();
             loadItineraries();
+            const fetchUser = async () => {
+                const { user, error } = await getLoggedInUser();
+                if (error || !user) {
+                    console.error("Error fetching user:", error);
+                } else {
+                    setUserId(user.id);
+                    if (userId) {loadMyRating()};
+                    
+                }
+            };
+            fetchUser();
         }
-    }, [postId]);
+    }, [postId, userId]);
 
     const loadEvents = async () => {
         const { data, error } = await getEvents();
@@ -38,59 +53,129 @@ export default function ViewItinerary() {
         }
     };
 
+    const loadMyRating = async () => {
+        const { data, error } = await getRatings();
+        if (!error) {
+            const matchedRating = data.find(rating => rating.user_id === userId);
+            setMyRating(matchedRating); 
+        } else {
+            console.error("Error fetching myRating:", error);
+        }
+    };
+
     const filterEvents = (events) => {
         const filtered = events.filter(event => event.post_id === postId);
         setFilteredEvents(filtered);
     };
 
-    
+    const handleSubmit = async (e, myRateIsGood) => {
+        e.preventDefault();
+        if (!userId) {
+          alert("You must be logged in to rate.");
+          return;
+        }
+
+        setMyRating({ ...myRating, is_good: myRateIsGood});
+
+        try {
+        const newRating = {
+          user_id: userId,
+          post_id: postId,
+          is_good: myRateIsGood,
+          comment: null, 
+          comment_date: new Date().toISOString(),
+        }; 
+        
+            const { data: ratingData, error: ratingError } = await upsertRating(newRating);
+            if (ratingError) {
+                console.error("Error inserting rating:", ratingError);
+                return; // Prevent further execution
+            }
+            
+            return;
+            
+        } catch (err) {
+            alert(err);
+        }
+
+        if (ratingError) {
+          console.error("Failed to rate itinerary:", ratingError);
+          alert("Failed to rate itinerary. Please try again.");
+          return;
+        }
+        console.log("Rating inserted:", ratingData);
+    }
+
+
+
 
     return (
         <div className={styles.viewItinerary}>
             <h1>{itinerary.post_name}</h1>
             {/* Buttons*/}
-            <div className={styles.buttons}>
-                <button>
+            <div>
+                <button className={styles.buttons}>
                     Add to Google Calendar
                 </button>
-                <button>
-                    Add to Saved Itineraries NEED AUTH
-                </button>
+                <button className={styles.buttons}>
+                    Add to Saved Itineraries WIP
+                </button >
                 <Link to={`/report-form/${itinerary.post_id}`}>
-                    <button>
-                        Report NEED AUTH
+                    <button className={styles.buttons}>
+                        Report WIP
                     </button>
                 </Link>
                 <Link to={`/comments/${itinerary.post_id}`}>
-                    <button>
+                    <button className={styles.buttons}>
                         Comments
                     </button>
                 </Link>
                 Rating: __%
-                <button>
-                    + NEED AUTH
+                <button
+                    className={`${styles.rateButtons} ${(myRating?.is_good || false) ? styles.pressed : ''}`}
+                    onClick={(e) => handleSubmit(e, true)}
+                >
+                    +
                 </button>
-                <button>
-                    - NEED AUTH
+                <button
+                    className={`${styles.rateButtons} ${(myRating?.is_good === false) ? styles.pressed : ''}`}
+                    onClick={(e) => handleSubmit(e, false)}
+                >
+                    -
                 </button>
             </div>
             <div className={styles.eventsContainer}>
-                {filteredEvents.length > 0 ? (
-                    filteredEvents.map((event) => (
-                        <div
-                            key={`${event.post_id}-${event.day}-${event.time}`}
-                            className={styles.eventItem}
-                        >
-                            <p className={styles.eventDetails}>
-                                <span className={styles.day}>Day {event.day}</span> |
-                                <span className={styles.time}>{event.time}</span> |
-                                <span className={styles.location}>{event.location}</span>
-                            </p>
-                        </div>
-                    ))
-                ) : (
-                    <p>No events.</p>
-                )}
+                <table className={styles.itineraryTable}>
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Time</th>
+                                <th>Location</th>
+                            </tr>
+                        </thead>
+                    <tbody>
+                    {filteredEvents.length > 0 ? (
+                        filteredEvents.map((event) => (
+                            <tr
+                                key={`${event.post_id}-${event.day}-${event.time}`}
+                                className={styles.eventItem}
+                            >
+                                <td className={styles.eventDetails}>
+                                    <span className={styles.day}>Day {event.day}</span>
+                                </td>
+                                <td className={styles.eventDetails}>
+                                    <span className={styles.time}>{event.time}</span>
+                                </td>
+                                <td className={styles.eventDetails}>
+                                    <span className={styles.location}>{event.location}</span>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <p>No events.</p>
+                    )}
+                    </tbody>
+                </table>
             </div>
             
             {itinerary ? (
