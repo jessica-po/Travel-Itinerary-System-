@@ -1,5 +1,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import styles from './root.module.css';
+import useAuth from "../hooks/useDatabase";
+
 
 export default function Root() {
     return (
@@ -18,6 +20,11 @@ export default function Root() {
                                 <li>
                                     <NavLink to="/saved-itineraries" className={styles["nav-item"]}>
                                         Saved Itineraries
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/admin-search" className={styles["nav-item"]}>
+                                        Admin Search
                                     </NavLink>
                                 </li>
                                 <li>
