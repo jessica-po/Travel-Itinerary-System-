@@ -37,7 +37,15 @@ const useDatabase = () => {
 
     const getRatings = async () => {
         const { data, error } = await supabase
-            .from('post_ratings')
+            .from('rating')
+            .select();
+        
+        return { data, error }
+    }
+
+    const getReports = async () => {
+        const { data, error } = await supabase
+            .from('report')
             .select();
         
         return { data, error }
@@ -84,9 +92,36 @@ const useDatabase = () => {
         return { data, error };
     };
 
+    const insertRating = async (newRating) => {
+        const { data, error } = await supabase
+            .from("rating")
+            .insert(newRating)
+            .select()
+            //.single();
+        return { data, error };
+    };
+
+    const upsertRating = async (newRating) => {
+        const { data, error } = await supabase
+            .from('rating')
+            .upsert(
+                {
+                    user_id: newRating.user_id,
+                    post_id: newRating.post_id,
+                    is_good: newRating.is_good,
+                    comment: newRating.comment,
+                    comment_time: newRating.comment_time,
+                },
+                { onConflict: ['user_id', 'post_id'] } // Specify the columns that define uniqueness
+            )
+            .select('*'); // Optional: Return the updated or inserted row(s)
+        return { data, error };
+    };
+    
+  
 
 
-    return { getLoggedInUser, insertEvents, getItineraries, getEvents, getRatings, uploadImage, getUserItineraries, insertItinerary };
+    return { getLoggedInUser, insertEvents, getItineraries, getEvents, getRatings, getReports, uploadImage, getUserItineraries, insertItinerary, insertRating, upsertRating };
 
 };
 

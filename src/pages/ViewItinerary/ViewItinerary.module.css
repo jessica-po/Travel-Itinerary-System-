@@ -6,13 +6,45 @@
 	padding: 20px;
 }
 
+.itineraryTable, .itineraryTable th, .itineraryTable td {
+    border: 1px solid black;
+    border-collapse: collapse;
+	margin-top: 10px;
+	text-align: left;
+	
+}
+th, td {
+    border: 1px solid #ddd; /* Add border */
+    padding: 5px; /* Add padding inside the cells */
+}
+
 .buttons {
+	cursor: pointer;
+	transition: background-color 0.3s ease;
     justify-self: left;
+	margin-right: 10px;
+}
+
+.buttons:hover, .rateButtons:hover {
+    background-color: lightgrey;
+}
+
+.buttons:active, .rateButtons:active {
+    background-color: grey;
+}
+
+.rateButtons {
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+.pressed {
+	background-color: grey;
 }
 
 .itineraryImage {
-	width: 150px;
-	height: 150px;
+	width: 400px;
+	height: 400px;
 	object-fit: cover;
 	border-radius: 8px;
 	margin-right: 20px;

@@ -16,6 +16,7 @@ import ViewItinerary from './pages/ViewItinerary/ViewItinerary';
 import Comments from './pages/Comments/Comments';
 import ReportForm from './pages/ReportForm/ReportForm';
 import CreateItinerary from './pages/CreateItinerary/CreateItinerary';
+import AdminSearch from './pages/AdminSearch/AdminSearch';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -31,6 +32,7 @@ const router = createBrowserRouter(
       <Route path="/view-itinerary/:postId" element={<ViewItinerary />} />
       <Route path="/comments/:postId" element={<Comments />} />
       <Route path="/report-form/:postId" element={<ReportForm />} />
+      <Route path="admin-search" element={<AdminSearch />} /> 
       <Route path="home" element={<Home />} />
     </Route>
   ),
