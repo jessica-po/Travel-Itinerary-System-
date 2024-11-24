@@ -1,10 +1,22 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import styles from './root.module.css';
 import useSupabase from "../context/SupabaseContext";
 
 
+
 export default function Root() {
-    const { user } = useSupabase();
+    const { user, logout } = useSupabase();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/login');
+        } catch (error) {
+            console.error("Error logging out:", error); 
+        }
+    };
+
 
     return (
         <>
@@ -41,6 +53,12 @@ export default function Root() {
                                                 My Account
                                             </NavLink>
                                         </li>
+                                        <li>
+                                                <button className="logout"
+                                                    onClick={handleLogout}>
+                                                    Log Out
+                                                </button>
+                                            </li>
                                     </>
                                 }
                                 {
@@ -73,3 +91,4 @@ export default function Root() {
         </>
     );
 }
+

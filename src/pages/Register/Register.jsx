@@ -57,6 +57,11 @@ export default function Register() {
             setFormData({ password: '', confirmPassword: '', firstName: '', lastName: '', email: '' });
             setError('Successful Registration! Please Login Now!');
 
+            navigate('/home', { 
+                replace: true, // replace the current page in history
+                state: { message: 'Login successful!' } // optional state to pass
+            });
+
         } catch (err) {
             setError(err.message);
         } finally {
