@@ -23,7 +23,9 @@ export default function ViewItinerary() {
         if (postId) {
             loadEvents();
             loadItineraries();
-            if (user.id) loadMyRating();
+            if (user) {
+                if (user.id) loadMyRating();
+            }
             // const fetchUser = async () => {
             //     const { user, error } = await getLoggedInUser();
             //     if (error || !user) {
@@ -35,6 +37,7 @@ export default function ViewItinerary() {
             //     }
             // };
             // fetchUser();
+            
         }
     }, [postId, user]);
 
@@ -81,7 +84,7 @@ export default function ViewItinerary() {
 
     const handleSubmit = async (e, myRateIsGood) => {
         e.preventDefault();
-        if (!user.id) {
+        if (!user) {
           alert("You must be logged in to rate.");
           return;
         }
