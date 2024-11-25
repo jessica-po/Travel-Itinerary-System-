@@ -9,33 +9,55 @@ export const SupabaseContext = createContext<SupabaseContextType | null>(null);
 export function SupabaseContextProvider({ children }) {
     const [ supabase, _ ] = useState(createClient<Database>(url, publicAnonKey));
     const [ user, setUser ] = useState<User | null>(null);
+    const [ userProfile, setUserProfile ] = useState<Database['public']['Tables']['profile']['Row'] | null>(null);
+
+    const setLoggedIn = async (user: User | null) => {
+        setUser(user);
+        
+        if(user === null) {
+            setUserProfile(null);
+        } else {
+            const { data, error } = await getUserProfile(user.id);
+
+            if (!error) {
+                setUserProfile(data);
+            }
+        }
+    };
 
     const register = async (user: RegisterDetails) => {
         const { data, error } = await supabase.auth.signUp(user);
         if (!error) {
-            setUser(data.user);
+            await setLoggedIn(data.user);
         }
         return { data, error };
-    }
+    };
 
     const login = async (user: LoginDetails) => {
         const { data, error } = await supabase.auth.signInWithPassword(user);
         if (!error) {
-            setUser(data.user);
+            await setLoggedIn(data.user);
         }
 
         return { data, error };
-    }
+    };
 
     const logout = async () => {
         const { error } = await supabase.auth.signOut({ scope: "local" });
 
         if (!error) {
-            setUser(null);
+            await setLoggedIn(null);
         }
 
         return error;
-    }
+    };
+
+    const getUserProfile = user_id => supabase
+        .from('profile')
+        .select()
+        .eq('user_id', user_id)
+        .limit(1)
+        .single();
 
     const getItineraries = async () => {
         const { data, error } = await supabase
@@ -43,7 +65,7 @@ export function SupabaseContextProvider({ children }) {
             .select();
 
         return { data, error };
-    }
+    };
 
     /**
      * 
@@ -55,7 +77,7 @@ export function SupabaseContextProvider({ children }) {
             .select();
 
         return { data, error };
-    }
+    };
 
     /**
      * 
@@ -80,7 +102,7 @@ export function SupabaseContextProvider({ children }) {
             .select();
 
         return { data, error };
-    }
+    };
 
     /**
      * 
@@ -92,7 +114,7 @@ export function SupabaseContextProvider({ children }) {
             .select();
 
         return { data, error };
-    }
+    };
 
     /**
      * 
@@ -106,7 +128,7 @@ export function SupabaseContextProvider({ children }) {
             .eq('user_id', userId);
 
         return { data, error };
-    }
+    };
 
     /**
      * 
@@ -183,7 +205,7 @@ export function SupabaseContextProvider({ children }) {
 
     return <>
         <SupabaseContext.Provider value={{
-            supabase, user,
+            supabase, user, userProfile,
             register, login, logout,
             getItineraries, getEvents, insertEvents, getRatings, getReports, getUserItineraries, uploadImage, insertItinerary, insertRating, upsertRating
         }}>
@@ -215,6 +237,7 @@ type LoginDetails = {
 type SupabaseContextType = {
     supabase: SupabaseClient;
     user: User | null;
+    userProfile: Database['public']['Tables']['profile']['Row'] | null;
     register: (user: RegisterDetails) => Promise<{
         data: {
             user: User | null;
