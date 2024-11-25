@@ -4,12 +4,10 @@ import styles from "./Navbar.module.css";
 
 export default function Navbar() {
     const { user, logout } = useSupabase();
-    const navigate = useNavigate();
 
     const handleLogout = async () => {
         try {
             await logout();
-            navigate('/login');
         } catch (error) {
             console.error("Error logging out:", error); 
         }
