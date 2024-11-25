@@ -10,7 +10,7 @@ import useSupabase from "../../context/SupabaseContext";
 export default function ViewItinerary() {
     const { postId } = useParams();
     const [ events, setEvents] = useState([]);
-    const { getItineraries, getEvents, getRatings, upsertRating, insertReport, insertRating, user } = useSupabase();
+    const { getItineraries, getEvents, getRatings, upsertRating, insertReport, insertRating, user, userProfile } = useSupabase();
     const [ filteredEvents, setFilteredEvents] = useState([]);
     const [ itinerary, setItinerary] = useState({});
     const [ myRating, setMyRating ] = useState([]);
@@ -171,27 +171,43 @@ export default function ViewItinerary() {
                 <Button href={`/comments/${itinerary.post_id}`}>
                     Comments
                 </Button>
-                <Button href={googleCalendarUrl} rel="noopener" target="_blank">
-                    Add to Google Calendar <OpenInNewIcon />
-                </Button>
-                <Button href={`/report-form/${itinerary.post_id}`}>
-                    Report WIP
-                </Button>
+                {
+                    userProfile?.role === "traveller" && <>
+                        <Button href={googleCalendarUrl} rel="noopener" target="_blank">
+                            Add to Google Calendar <OpenInNewIcon />
+                        </Button>
+                        <Button href={`/report-form/${itinerary.post_id}`}>
+                            Report WIP
+                        </Button>
+                    </>
+                }
+                {
+                    userProfile?.role === "admin" && <>
+                        <Button color="error">
+                            Delete Post
+                        </Button>
+                        <Button color="error">
+                            Ban Poster
+                        </Button>
+                    </>
+                }
             </ButtonGroup>
             Rating: __%
-            <ButtonGroup>
-                <Button
-                    variant={myRating?.is_good ? "contained" : "outlined"}
-                    onClick={e => handleSubmit(e, true)}
-                >
-                    <ThumbUpIcon />
-                </Button>
-                <Button variant={myRating?.is_good === false ? "contained" : "outlined"}
-                    onClick={e => handleSubmit(e, false)}
-                >
-                    <ThumbDownIcon />
-                </Button>
-            </ButtonGroup>
+            {
+                userProfile?.role === "traveller" && <ButtonGroup>
+                    <Button
+                        variant={myRating?.is_good ? "contained" : "outlined"}
+                        onClick={e => handleSubmit(e, true)}
+                    >
+                        <ThumbUpIcon />
+                    </Button>
+                    <Button variant={myRating?.is_good === false ? "contained" : "outlined"}
+                        onClick={e => handleSubmit(e, false)}
+                    >
+                        <ThumbDownIcon />
+                    </Button>
+                </ButtonGroup>
+            }
             <div className={styles.eventsContainer}>
                 <table className={styles.itineraryTable}>
                         <thead>
