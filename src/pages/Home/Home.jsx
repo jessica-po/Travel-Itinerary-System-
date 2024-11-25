@@ -8,7 +8,7 @@ import useSupabase from "../../context/SupabaseContext";
 export default function Home() {
     const [ itineraries, setItineraries ] = useState([]);
     const [ ratings, setRatings ] = useState([]);
-    const { getItineraries, getRatings } = useSupabase();
+    const { getItineraries, getRatings, user } = useSupabase();
 
     useEffect(() => {
         document.title = "Home - Travel Itineraries";

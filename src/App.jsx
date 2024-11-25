@@ -17,27 +17,33 @@ import Comments from './pages/Comments/Comments';
 import ReportForm from './pages/ReportForm/ReportForm';
 import CreateItinerary from './pages/CreateItinerary/CreateItinerary';
 import AdminSearch from './pages/AdminSearch/AdminSearch';
-
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route path="/" element={<Root />} errorElement={<ErrorPage />}>
-      <Route index element={<Home />} />
-      <Route path="saved-itineraries" element={<SavedItineraries />} />
-      <Route path="my-itineraries" element={<MyItineraries />} />
-      <Route path="create-itinerary" element={<CreateItinerary/>} />
-      <Route path="account" element={<AccountDetails />} />
-      <Route path="register" element={<Register />} />
-      <Route path="login" element={<Login />} />
-      <Route path="search-itinerary" element={<SearchItinerary />} />
-      <Route path="/view-itinerary/:postId" element={<ViewItinerary />} />
-      <Route path="/comments/:postId" element={<Comments />} />
-      <Route path="/report-form/:postId" element={<ReportForm />} />
-      <Route path="admin-search" element={<AdminSearch />} /> 
-      <Route path="home" element={<Home />} />
-    </Route>
-  ),
-);
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
+import useSupabase from './context/SupabaseContext';
 
 export default function App() {
+  const { user } = useSupabase();
+
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <Route path="/" element={<Root />} errorElement={<ErrorPage />}>
+        <Route index element={<Home />} />
+        <Route element={<ProtectedRoute isAllowed={!!user} redirectTo='login' />}>
+          <Route path="saved-itineraries" element={<SavedItineraries />} />
+          <Route path="my-itineraries" element={<MyItineraries />} />
+          <Route path="create-itinerary" element={<CreateItinerary/>} />
+          <Route path="account" element={<AccountDetails />} />
+          <Route path="/report-form/:postId" element={<ReportForm />} />
+          <Route path="admin-search" element={<AdminSearch />} /> 
+        </Route>
+        <Route path="register" element={<Register />} />
+        <Route path="login" element={<Login />} />
+        <Route path="search-itinerary" element={<SearchItinerary />} />
+        <Route path="/view-itinerary/:postId" element={<ViewItinerary />} />
+        <Route path="/comments/:postId" element={<Comments />} />
+        <Route path="home" element={<Home />} />
+      </Route>
+    ),
+  );
+
   return <RouterProvider router={router} />
 }
