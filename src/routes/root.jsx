@@ -64,11 +64,6 @@ export default function Root() {
                                 {
                                     !user && <>
                                         <li>
-                                            <NavLink to="/register" className={styles["nav-item"]}>
-                                                Register
-                                            </NavLink>
-                                        </li>
-                                        <li>
                                             <NavLink to="/login" className={styles["nav-item"]}>
                                                 Login
                                             </NavLink>
