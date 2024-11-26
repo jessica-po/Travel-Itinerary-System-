@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Leave this here!! If you need service key, follow instructions in the file below to get it
+supabase.admin.token.jsx
