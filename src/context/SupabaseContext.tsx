@@ -1,49 +1,81 @@
 import { AuthError, createClient, PostgrestError, Session, SupabaseClient, User, WeakPassword } from "@supabase/supabase-js";
 import React, { createContext, useContext, useState } from "react";
 import { publicAnonKey, url } from "../../supabase.token";
+import { service_role_key } from "../../supabase.admin.token";
 import { Database } from "../../database.types";
 import { StorageError } from "@supabase/storage-js"
 
 export const SupabaseContext = createContext<SupabaseContextType | null>(null);
 
 export function SupabaseContextProvider({ children }) {
-    const [ supabase, _ ] = useState(createClient<Database>(url, publicAnonKey));
+    const [ supabase, _ ] = useState(createClient<Database>(url, service_role_key || publicAnonKey));
     const [ user, setUser ] = useState<User | null>(null);
+    const [ userProfile, setUserProfile ] = useState<Database['public']['Tables']['profile']['Row'] | null>(null);
+
+    const setLoggedIn = async (user: User | null) => {
+        setUser(user);
+        
+        if(user === null) {
+            setUserProfile(null);
+        } else {
+            const { data, error } = await getUserProfile(user.id);
+
+            if (!error) {
+                setUserProfile(data);
+            }
+        }
+    };
 
     const register = async (user: RegisterDetails) => {
         const { data, error } = await supabase.auth.signUp(user);
         if (!error) {
-            setUser(data.user);
+            await setLoggedIn(data.user);
         }
         return { data, error };
-    }
+    };
 
     const login = async (user: LoginDetails) => {
         const { data, error } = await supabase.auth.signInWithPassword(user);
         if (!error) {
-            setUser(data.user);
+            await setLoggedIn(data.user);
         }
 
         return { data, error };
-    }
+    };
 
     const logout = async () => {
         const { error } = await supabase.auth.signOut({ scope: "local" });
 
         if (!error) {
-            setUser(null);
+            await setLoggedIn(null);
         }
 
         return error;
-    }
+    };
 
+    const getUserProfile = async (user_id) => {
+        const { data, error } = await supabase
+            .from('profile')
+            .select()
+            .eq('user_id', user_id)
+            .limit(1)
+            .single();
+        
+        return { data, error };
+    };
+
+    /**
+     * 
+     * @returns all unbanned itineraries
+     */
     const getItineraries = async () => {
         const { data, error } = await supabase
             .from('itinerary')
-            .select();
+            .select()
+            .eq('itinerary_status', 'normal');
 
         return { data, error };
-    }
+    };
 
     /**
      * 
@@ -55,7 +87,7 @@ export function SupabaseContextProvider({ children }) {
             .select();
 
         return { data, error };
-    }
+    };
 
     /**
      * 
@@ -80,7 +112,7 @@ export function SupabaseContextProvider({ children }) {
             .select();
 
         return { data, error };
-    }
+    };
 
     /**
      * 
@@ -92,7 +124,7 @@ export function SupabaseContextProvider({ children }) {
             .select();
 
         return { data, error };
-    }
+    };
 
     /**
      * 
@@ -106,7 +138,7 @@ export function SupabaseContextProvider({ children }) {
             .eq('user_id', userId);
 
         return { data, error };
-    }
+    };
 
     /**
      * 
@@ -181,11 +213,52 @@ export function SupabaseContextProvider({ children }) {
         return { data, error };
     };
 
+    /**
+     * 
+     * @param post_id id of the itinerary to ban
+     * @returns error if any error occurred
+     */
+    const banPost = async (post_id: string) => {
+        if (userProfile?.role === 'admin') {
+            const { error } = await supabase
+                .from('itinerary')
+                .update({ itinerary_status: 'banned' })
+                .eq('post_id', post_id);
+            
+            return error;
+        }
+    }
+
+    /**
+     * Bans the corresponding user and all of their posts
+     * @param user_id id of the user to ban
+     * @returns an object with banUserAuth, banUser, and banUserPosts async functions
+     */
+    const banUserId = (user_id: string) => {
+        if (userProfile?.role === 'admin') {
+            return {
+                banUserAuth: supabase
+                    .auth
+                    .admin
+                    .updateUserById(user_id, { ban_duration: '8760h' }),
+                banUser: supabase
+                    .from('profile')
+                    .update({ profile_status: 'banned' })
+                    .eq('user_id', user_id),
+                banUserPosts: supabase
+                    .from('itinerary')
+                    .update({ itinerary_status: 'banned' })
+                    .eq('user_id', user_id)
+            };
+        }
+    }
+
     return <>
         <SupabaseContext.Provider value={{
-            supabase, user,
+            supabase, user, userProfile,
             register, login, logout,
-            getItineraries, getEvents, insertEvents, getRatings, getReports, getUserItineraries, uploadImage, insertItinerary, insertRating, upsertRating
+            getItineraries, getEvents, insertEvents, getRatings, getReports, getUserItineraries, uploadImage, insertItinerary, insertRating, upsertRating,
+            banPost, banUserId
         }}>
             {children}
         </SupabaseContext.Provider>
@@ -215,6 +288,7 @@ type LoginDetails = {
 type SupabaseContextType = {
     supabase: SupabaseClient;
     user: User | null;
+    userProfile: Database['public']['Tables']['profile']['Row'] | null;
     register: (user: RegisterDetails) => Promise<{
         data: {
             user: User | null;
@@ -303,4 +377,6 @@ type SupabaseContextType = {
         data: Database['public']['Tables']['rating']['Update'] | null;
         error: PostgrestError | null;
     }>;
+    banPost: (post_id: string) => Promise<PostgrestError | null | undefined>;
+    banUserId: any;
 }

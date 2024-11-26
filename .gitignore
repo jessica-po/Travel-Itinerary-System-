@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Leave this here! If you need service key, follow these instructions: to get it:
+# To get this key, go to Supabase > Project Settings > API > service_role secret key. Don't push this secret key!
+# Add to the supabase.admin.token.jsx file:
+#   export const service_role_key = "KEY";
+supabase.admin.token.jsx

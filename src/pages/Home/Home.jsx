@@ -8,7 +8,7 @@ import useSupabase from "../../context/SupabaseContext";
 export default function Home() {
     const [ itineraries, setItineraries ] = useState([]);
     const [ ratings, setRatings ] = useState([]);
-    const { getItineraries, getRatings, user } = useSupabase();
+    const { getItineraries, getRatings, user, userProfile } = useSupabase();
 
     useEffect(() => {
         document.title = "Home - Travel Itineraries";
@@ -66,9 +66,16 @@ export default function Home() {
         );
     }
 
+    const handleTest = () => {
+        console.log("USER:");
+        console.log(user);
+        console.log("PROFILE:");
+        console.log(userProfile);
+    }
+
     return (
         <div className="home">
-            <Button onClick={() => console.log(user)}>Log User in console (TEMPORARY)</Button>
+            <Button onClick={handleTest}>Log User in console (TEMPORARY)</Button>
             <Stack spacing={5}>
                 <Card>
                     <CardContent>

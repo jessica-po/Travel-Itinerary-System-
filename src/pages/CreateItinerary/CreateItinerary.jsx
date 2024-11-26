@@ -148,7 +148,7 @@ export default function CreateItinerary() {
 
     // Insert the itinerary
     const newItinerary = {
-      user_id: user.Id,
+      user_id: user.id,
       post_name: itineraryName,
       destination,
       price_low: priceLow,
@@ -156,7 +156,7 @@ export default function CreateItinerary() {
       duration: days,
       group_size: groupSize,
       is_family_friendly: isFamilyFriendly,
-      image_url: publicUrl,
+      image_url: publicUrl.publicUrl,
       description,
     };
 

@@ -10,7 +10,7 @@ import useSupabase from "../../context/SupabaseContext";
 export default function ViewItinerary() {
     const { postId } = useParams();
     const [ events, setEvents] = useState([]);
-    const { getItineraries, getEvents, getRatings, upsertRating, insertReport, insertRating, user } = useSupabase();
+    const { getItineraries, getEvents, getRatings, upsertRating, insertReport, insertRating, user, userProfile, banPost, banUserId } = useSupabase();
     const [ filteredEvents, setFilteredEvents] = useState([]);
     const [ itinerary, setItinerary] = useState({});
     const [ myRating, setMyRating ] = useState([]);
@@ -23,7 +23,9 @@ export default function ViewItinerary() {
         if (postId) {
             loadEvents();
             loadItineraries();
-            if (user.id) loadMyRating();
+            if (user) {
+                if (user.id) loadMyRating();
+            }
             // const fetchUser = async () => {
             //     const { user, error } = await getLoggedInUser();
             //     if (error || !user) {
@@ -35,6 +37,7 @@ export default function ViewItinerary() {
             //     }
             // };
             // fetchUser();
+            
         }
     }, [postId, user]);
 
@@ -81,7 +84,7 @@ export default function ViewItinerary() {
 
     const handleSubmit = async (e, myRateIsGood) => {
         e.preventDefault();
-        if (!user.id) {
+        if (!user) {
           alert("You must be logged in to rate.");
           return;
         }
@@ -115,7 +118,33 @@ export default function ViewItinerary() {
         console.log("Rating inserted:", ratingData);
     }
 
+    const handleBanPost = async () => {
+        const error = await banPost(itinerary.post_id);
 
+        if (error) {
+            alert(error.message);
+            console.error(error);
+        }
+    };
+
+    const handleBanUser = async () => {
+        const { banUserAuth, banUser, banUserPosts } = banUserId(itinerary.user_id);
+
+        const response = await Promise.all([
+            banUserAuth,
+            banUser,
+            banUserPosts
+        ])
+
+        if (response[0].error || response[1].error || response[2].error) {
+            alert("Error occurred while trying to ban user");
+            if (response[0].error) console.error(response[0].error);
+            if (response[1].error) console.error(response[1].error);
+            if (response[2].error) console.error(response[2].error);
+        } else {
+            alert("User banned for 1 year and all associated posts successfully banned.");
+        }
+    };
 
     const createUrl = (events, itinerary) => {
         const sortedEvents = [...events].sort((a, b) => {
@@ -165,30 +194,46 @@ export default function ViewItinerary() {
                 <Button>
                     Save Itinerary WIP
                 </Button>
-                <Button href={`/comments/${itinerary.post_id}`}>
+                <Button component={Link} to={`/comments/${itinerary.post_id}`}>
                     Comments
                 </Button>
-                <Button href={googleCalendarUrl} rel="noopener" target="_blank">
-                    Add to Google Calendar <OpenInNewIcon />
-                </Button>
-                <Button href={`/report-form/${itinerary.post_id}`}>
-                    Report WIP
-                </Button>
+                {
+                    userProfile?.role === "traveller" && <>
+                        <Button component={Link} to={googleCalendarUrl} rel="noopener" target="_blank">
+                            Add to Google Calendar <OpenInNewIcon />
+                        </Button>
+                        <Button component={Link} to={`/report-form/${itinerary.post_id}`}>
+                            Report WIP
+                        </Button>
+                    </>
+                }
+                {
+                    userProfile?.role === "admin" && <>
+                        <Button color="error" onClick={handleBanPost}>
+                            Ban Post
+                        </Button>
+                        <Button color="error" onClick={handleBanUser}>
+                            Ban Poster
+                        </Button>
+                    </>
+                }
             </ButtonGroup>
             Rating: __%
-            <ButtonGroup>
-                <Button
-                    variant={myRating?.is_good ? "contained" : "outlined"}
-                    onClick={e => handleSubmit(e, true)}
-                >
-                    <ThumbUpIcon />
-                </Button>
-                <Button variant={myRating?.is_good === false ? "contained" : "outlined"}
-                    onClick={e => handleSubmit(e, false)}
-                >
-                    <ThumbDownIcon />
-                </Button>
-            </ButtonGroup>
+            {
+                userProfile?.role === "traveller" && <ButtonGroup>
+                    <Button
+                        variant={myRating?.is_good ? "contained" : "outlined"}
+                        onClick={e => handleSubmit(e, true)}
+                    >
+                        <ThumbUpIcon />
+                    </Button>
+                    <Button variant={myRating?.is_good === false ? "contained" : "outlined"}
+                        onClick={e => handleSubmit(e, false)}
+                    >
+                        <ThumbDownIcon />
+                    </Button>
+                </ButtonGroup>
+            }
             <div className={styles.eventsContainer}>
                 <table className={styles.itineraryTable}>
                         <thead>
