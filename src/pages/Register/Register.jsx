@@ -16,11 +16,20 @@ export default function Register() {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { register } = useSupabase();
+    const { register, user } = useSupabase();
 
     useEffect(() => {
         document.title = "Register - Travel Itineraries";
     });
+
+    useEffect(() => {
+        if (user) {
+            navigate('/', { 
+                replace: true, // replace the current page in history
+                state: { message: 'Login successful!' } // optional state to pass
+            });
+        }
+    }, [user]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -56,12 +65,6 @@ export default function Register() {
 
             setFormData({ password: '', confirmPassword: '', firstName: '', lastName: '', email: '' });
             setError('Successful Registration! Please Login Now!');
-
-            navigate('/home', { 
-                replace: true, // replace the current page in history
-                state: { message: 'Login successful!' } // optional state to pass
-            });
-
         } catch (err) {
             setError(err.message);
         } finally {

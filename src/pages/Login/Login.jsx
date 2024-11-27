@@ -8,11 +8,21 @@ export default function Login() {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login } = useSupabase();
+    const { login, user } = useSupabase();
 
     useEffect(() => {
         document.title = "Login - Travel Itineraries";
     }, []);
+
+    useEffect(() => {
+        if (user) {
+            // Navigate to home page after successful login
+            navigate('/', { 
+                replace: true, // replace the current page in history
+                state: { message: 'Login successful!' } // optional state to pass
+            });
+        }
+    }, [user]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -39,13 +49,6 @@ export default function Login() {
 
             // Clear form data
             setFormData({ email: '', password: '' });
-
-            // Navigate to home page after successful login
-            navigate('/home', { 
-                replace: true, // replace the current page in history
-                state: { message: 'Login successful!' } // optional state to pass
-            });
-
         } catch (err) {
             setError(err.message); // Set the error if authentication fails
         } finally {
