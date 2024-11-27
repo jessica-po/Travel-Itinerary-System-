@@ -40,7 +40,6 @@ export default function App() {
         <Route path="search-itinerary" element={<SearchItinerary />} />
         <Route path="/view-itinerary/:postId" element={<ViewItinerary />} />
         <Route path="/comments/:postId" element={<Comments />} />
-        <Route path="home" element={<Home />} />
       </Route>
     ),
   );

@@ -1,14 +1,14 @@
 import { AuthError, createClient, PostgrestError, Session, SupabaseClient, User, WeakPassword } from "@supabase/supabase-js";
 import React, { createContext, useContext, useState } from "react";
 import { publicAnonKey, url } from "../../supabase.token";
-import { service_role_key } from "../../supabase.admin.token";
+// import { service_role_key } from "../../supabase.admin.token";
 import { Database } from "../../database.types";
 import { StorageError } from "@supabase/storage-js"
 
 export const SupabaseContext = createContext<SupabaseContextType | null>(null);
 
 export function SupabaseContextProvider({ children }) {
-    const [ supabase, _ ] = useState(createClient<Database>(url, service_role_key || publicAnonKey));
+    const [ supabase, _ ] = useState(createClient<Database>(url, publicAnonKey));
     const [ user, setUser ] = useState<User | null>(null);
     const [ userProfile, setUserProfile ] = useState<Database['public']['Tables']['profile']['Row'] | null>(null);
 
