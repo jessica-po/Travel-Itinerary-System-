@@ -98,12 +98,23 @@ export function SupabaseContextProvider({ children }) {
 		return { data, error };
 	};
 
-	/**
+	
+    /**
 	 *
 	 * @returns ratings made by all users
 	 */
 	const getRatings = async () => {
 		const { data, error } = await supabase.from("rating").select();
+
+		return { data, error };
+	};
+
+    /**
+	 *
+	 * @returns total ratings for a specific post
+	 */
+	const getPostRatings = async () => {
+		const { data, error } = await supabase.from("post_ratings").select();
 
 		return { data, error };
 	};
@@ -281,6 +292,7 @@ export function SupabaseContextProvider({ children }) {
 					getEvents,
 					insertEvents,
 					getRatings,
+                    getPostRatings,
 					getReports,
 					getUserItineraries,
 					uploadImage,
@@ -393,6 +405,16 @@ type SupabaseContextType = {
 					is_good: boolean;
 					post_id: string;
 					user_id: string;
+			  }[]
+			| null;
+		error: PostgrestError | null;
+	}>;
+    getPostRatings: () => Promise<{
+		data:
+			| {
+					is_good: boolean;
+					post_id: string;
+					total: number;
 			  }[]
 			| null;
 		error: PostgrestError | null;
