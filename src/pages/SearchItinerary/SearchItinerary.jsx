@@ -7,7 +7,7 @@ import useSupabase from "../../context/SupabaseContext";
 export default function SearchItinerary() {
 	const [ itineraries, setItineraries ] = useState([]);
 	const [ ratings, setRatings ] = useState([]);
-	const { getItineraries, getRatings } = useSupabase();
+	const { getItineraries, getPostRatings } = useSupabase();
 	const [filters, setFilters] = useState({
 		searchQuery: "",
 		minDuration: "",
@@ -38,7 +38,7 @@ export default function SearchItinerary() {
     };
 
 	const loadRatings = async () => {
-        const { data, error } = await getRatings();
+        const { data, error } = await getPostRatings();
         if (!error) {
             setRatings(data);
         } else {
