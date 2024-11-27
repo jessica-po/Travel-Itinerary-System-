@@ -197,16 +197,12 @@ export default function ViewItinerary() {
                 <Button component={Link} to={`/comments/${itinerary.post_id}`}>
                     Comments
                 </Button>
-                {
-                    userProfile?.role === "traveller" && <>
-                        <Button component={Link} to={googleCalendarUrl} rel="noopener" target="_blank">
-                            Add to Google Calendar <OpenInNewIcon />
-                        </Button>
-                        <Button component={Link} to={`/report-form/${itinerary.post_id}`}>
-                            Report WIP
-                        </Button>
-                    </>
-                }
+                <Button component={Link} to={googleCalendarUrl} rel="noopener" target="_blank">
+                    Add to Google Calendar <OpenInNewIcon />
+                </Button>
+                <Button component={Link} to={`/report-form/${itinerary.post_id}`}>
+                    Report WIP
+                </Button>
                 {
                     userProfile?.role === "admin" && <>
                         <Button color="error" onClick={handleBanPost}>
@@ -219,21 +215,19 @@ export default function ViewItinerary() {
                 }
             </ButtonGroup>
             Rating: __%
-            {
-                userProfile?.role === "traveller" && <ButtonGroup>
-                    <Button
-                        variant={myRating?.is_good ? "contained" : "outlined"}
-                        onClick={e => handleSubmit(e, true)}
-                    >
-                        <ThumbUpIcon />
-                    </Button>
-                    <Button variant={myRating?.is_good === false ? "contained" : "outlined"}
-                        onClick={e => handleSubmit(e, false)}
-                    >
-                        <ThumbDownIcon />
-                    </Button>
-                </ButtonGroup>
-            }
+            <ButtonGroup>
+                <Button
+                    variant={myRating?.is_good ? "contained" : "outlined"}
+                    onClick={e => handleSubmit(e, true)}
+                >
+                    <ThumbUpIcon />
+                </Button>
+                <Button variant={myRating?.is_good === false ? "contained" : "outlined"}
+                    onClick={e => handleSubmit(e, false)}
+                >
+                    <ThumbDownIcon />
+                </Button>
+            </ButtonGroup>
             <div className={styles.eventsContainer}>
                 <table className={styles.itineraryTable}>
                         <thead>
