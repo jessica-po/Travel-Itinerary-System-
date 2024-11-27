@@ -78,6 +78,7 @@ export default function SearchItinerary() {
 	};
 
 	const filteredItineraries = itineraries.filter((itinerary) => {
+		const matchesStatus = itinerary.itinerary_status !== "banned";
 		const matchesSearch =
 			itinerary.post_name?.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
 			itinerary.destination?.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
@@ -89,7 +90,7 @@ export default function SearchItinerary() {
 			(!filters.minPrice || itinerary.price_high >= parseFloat(filters.minPrice)) &&
 			(!filters.maxPrice || itinerary.price_low <= parseFloat(filters.maxPrice));
 		const matchesFamily = !filters.familyFriendly || itinerary.is_family_friendly;
-		return matchesSearch && matchesDuration && matchesPrice && matchesFamily;
+		return matchesSearch && matchesDuration && matchesPrice && matchesFamily && matchesStatus;
 	});
 
 	return (
@@ -140,13 +141,17 @@ export default function SearchItinerary() {
 				<div className={styles.itineraryContent}>
 					<div className={styles.itineraryList}>
 						{filteredItineraries.map((itinerary) => (
-							<Link to={`/view-itinerary/${itinerary.post_id}`}>
+							<Link key={itinerary.post_id} to={`/view-itinerary/${itinerary.post_id}`}>
 								<div key={itinerary.post_id} className={styles.itineraryCard}>
 									<img src={itinerary.image_url} alt={itinerary.post_name} className={styles.itineraryImage} />
 									<div className={styles.itineraryInfo}>
 										<h3>{itinerary.post_name}</h3>
 										<div className={styles.destination}>{itinerary.destination}</div>
-										<div className={styles.description}>{itinerary.description}</div>
+										<div className={styles.description}>
+											{itinerary.description?.length > 200
+												? `${itinerary.description.substring(0, 200)}...`
+												: itinerary.description}
+										</div>
 										<div className={styles.details}>
 											<span>Duration: {itinerary.duration} days</span>
 											<span>

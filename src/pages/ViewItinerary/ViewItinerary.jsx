@@ -29,6 +29,8 @@ export default function ViewItinerary() {
 	// const [userId, setUserId] = useState(null);
 	//const [myRateIsGood, setMyRateIsGood] = useState(false);
 	const [googleCalendarUrl, setGoogleCalendarUrl] = useState("https://calendar.google.com/calendar/u/0/r/eventedit");
+	const [showBanPostModal, setShowBanPostModal] = useState(false);
+	const [showBanUserModal, setShowBanUserModal] = useState(false);
 
 	useEffect(() => {
 		document.title = "View Itinerary - Travel Itineraries";
@@ -128,16 +130,51 @@ export default function ViewItinerary() {
 		console.log("Rating inserted:", ratingData);
 	};
 
-	const handleBanPost = async () => {
+	// const handleBanPost = async () => {
+	// 	const error = await banPost(itinerary.post_id);
+
+	// 	if (error) {
+	// 		alert(error.message);
+	// 		console.error(error);
+	// 	}
+	// };
+
+	// const handleBanUser = async () => {
+	// 	const { banUserAuth, banUser, banUserPosts } = banUserId(itinerary.user_id);
+
+	// 	const response = await Promise.all([banUserAuth, banUser, banUserPosts]);
+
+	// 	if (response[0].error || response[1].error || response[2].error) {
+	// 		alert("Error occurred while trying to ban user");
+	// 		if (response[0].error) console.error(response[0].error);
+	// 		if (response[1].error) console.error(response[1].error);
+	// 		if (response[2].error) console.error(response[2].error);
+	// 	} else {
+	// 		alert("User banned for 1 year and all associated posts successfully banned.");
+	// 	}
+	// };
+
+	const handleBanPost = () => {
+		setShowBanPostModal(true);
+	};
+
+	const handleBanUser = () => {
+		setShowBanUserModal(true);
+	};
+
+	const confirmBanPost = async () => {
 		const error = await banPost(itinerary.post_id);
 
 		if (error) {
 			alert(error.message);
 			console.error(error);
+		} else {
+			alert("Itinerary has been banned.");
 		}
+		setShowBanPostModal(false);
 	};
 
-	const handleBanUser = async () => {
+	const confirmBanUser = async () => {
 		const { banUserAuth, banUser, banUserPosts } = banUserId(itinerary.user_id);
 
 		const response = await Promise.all([banUserAuth, banUser, banUserPosts]);
@@ -150,6 +187,7 @@ export default function ViewItinerary() {
 		} else {
 			alert("User banned for 1 year and all associated posts successfully banned.");
 		}
+		setShowBanUserModal(false);
 	};
 
 	const createUrl = (events, itinerary) => {
@@ -315,6 +353,38 @@ export default function ViewItinerary() {
 				</div>
 			) : (
 				<p>No itinerary found for this post_id.</p>
+			)}
+			{showBanPostModal && (
+				<div className={styles.modalOverlay}>
+					<div className={styles.modalContent}>
+						<h3>Confirm Ban Post</h3>
+						<p>Are you sure you want to ban this itinerary?</p>
+						<div className={styles.modalButtons}>
+							<button className={styles.confirmButton} onClick={confirmBanPost}>
+								Yes
+							</button>
+							<button className={styles.cancelButton} onClick={() => setShowBanPostModal(false)}>
+								Cancel
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+			{showBanUserModal && (
+				<div className={styles.modalOverlay}>
+					<div className={styles.modalContent}>
+						<h3>Confirm Ban User</h3>
+						<p>Are you sure you want to ban this user?</p>
+						<div className={styles.modalButtons}>
+							<button className={styles.confirmButton} onClick={confirmBanUser}>
+								Yes
+							</button>
+							<button className={styles.cancelButton} onClick={() => setShowBanUserModal(false)}>
+								Cancel
+							</button>
+						</div>
+					</div>
+				</div>
 			)}
 		</div>
 	);

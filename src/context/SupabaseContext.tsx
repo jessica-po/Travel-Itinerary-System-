@@ -79,6 +79,16 @@ export function SupabaseContextProvider({ children }) {
 
 	/**
 	 *
+	 * @returns all itineraries (even banned ones)
+	 */
+	const getAllItineraries = async () => {
+		const { data, error } = await supabase.from("itinerary").select();
+
+		return { data, error };
+	};
+
+	/**
+	 *
 	 * @returns list of all events
 	 */
 	const getEvents = async () => {
@@ -253,7 +263,8 @@ export function SupabaseContextProvider({ children }) {
 	/**
 	 * Bans the corresponding user and all of their posts
 	 * @param user_id id of the user to ban
-	 * @returns an object with banUserAuth, banUser, and banUserPosts async functions
+	 * @returns an object with banUserAuth, banUser, and
+	 * osts async functions
 	 */
 	const banUserId = (user_id: string) => {
 		if (userProfile?.role === "admin") {
@@ -276,6 +287,7 @@ export function SupabaseContextProvider({ children }) {
 					login,
 					logout,
 					getItineraries,
+					getAllItineraries,
 					getSavedItineraries,
 					saveItinerary,
 					getEvents,
@@ -350,6 +362,10 @@ type SupabaseContextType = {
 	}>;
 	logout: () => Promise<AuthError | null>;
 	getItineraries: () => Promise<{
+		data: Database["public"]["Tables"]["itinerary"]["Row"][] | null;
+		error: PostgrestError | null;
+	}>;
+	getAllItineraries: () => Promise<{
 		data: Database["public"]["Tables"]["itinerary"]["Row"][] | null;
 		error: PostgrestError | null;
 	}>;
