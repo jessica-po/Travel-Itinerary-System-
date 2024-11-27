@@ -113,6 +113,13 @@ export function SupabaseContextProvider({ children }) {
 
         return { data, error };
     };
+    const getPostRatings = async () => {
+        const { data, error } = await supabase
+            .from('post_ratings')
+            .select();
+
+        return { data, error };
+    };
 
     /**
      * 
@@ -257,7 +264,7 @@ export function SupabaseContextProvider({ children }) {
         <SupabaseContext.Provider value={{
             supabase, user, userProfile,
             register, login, logout,
-            getItineraries, getEvents, insertEvents, getRatings, getReports, getUserItineraries, uploadImage, insertItinerary, insertRating, upsertRating,
+            getItineraries, getEvents, insertEvents, getRatings, getPostRatings, getReports, getUserItineraries, uploadImage, insertItinerary, insertRating, upsertRating,
             banPost, banUserId
         }}>
             {children}
@@ -337,6 +344,14 @@ type SupabaseContextType = {
             is_good: boolean;
             post_id: string;
             user_id: string;
+        }[] | null;
+        error: PostgrestError | null;
+    }>;
+    getPostRatings: () => Promise<{
+        data: {
+            is_good: boolean;
+            post_id: string;
+            total: number;
         }[] | null;
         error: PostgrestError | null;
     }>;
