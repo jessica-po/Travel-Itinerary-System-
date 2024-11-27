@@ -191,18 +191,26 @@ export default function ViewItinerary() {
         <div className={styles.viewItinerary}>
             <h1>{itinerary.post_name}</h1>
             <ButtonGroup variant="contained" size="large">
-                <Button>
-                    Save Itinerary WIP
-                </Button>
+                {
+                    (!userProfile || userProfile?.role === "traveller") && <>
+                        <Button>
+                            Save Itinerary WIP
+                        </Button>
+                    </>
+                }
                 <Button component={Link} to={`/comments/${itinerary.post_id}`}>
                     Comments
                 </Button>
-                <Button component={Link} to={googleCalendarUrl} rel="noopener" target="_blank">
-                    Add to Google Calendar <OpenInNewIcon />
-                </Button>
-                <Button component={Link} to={`/report-form/${itinerary.post_id}`}>
-                    Report WIP
-                </Button>
+                {
+                    (!userProfile || userProfile?.role === "traveller") && <>
+                        <Button component={Link} to={googleCalendarUrl} rel="noopener" target="_blank">
+                            Add to Google Calendar <OpenInNewIcon />
+                        </Button>
+                        <Button component={Link} to={`/report-form/${itinerary.post_id}`}>
+                            Report WIP
+                        </Button>
+                    </>
+                }
                 {
                     userProfile?.role === "admin" && <>
                         <Button color="error" onClick={handleBanPost}>
