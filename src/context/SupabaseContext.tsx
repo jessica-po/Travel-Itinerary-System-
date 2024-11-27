@@ -9,14 +9,14 @@ import {
 } from "@supabase/supabase-js";
 import React, { createContext, useContext, useState } from "react";
 import { publicAnonKey, url } from "../../supabase.token";
-// import { service_role_key } from "../../supabase.admin.token";
+import { service_role_key } from "../../supabase.admin.token";
 import { Database } from "../../database.types";
 import { StorageError } from "@supabase/storage-js";
 
 export const SupabaseContext = createContext<SupabaseContextType | null>(null);
 
 export function SupabaseContextProvider({ children }) {
-	const [supabase, _] = useState(createClient<Database>(url, publicAnonKey));
+	const [supabase, _] = useState(createClient<Database>(url, service_role_key || publicAnonKey));
 	const [user, setUser] = useState<User | null>(null);
 	const [userProfile, setUserProfile] = useState<Database["public"]["Tables"]["profile"]["Row"] | null>(null);
 
@@ -73,16 +73,6 @@ export function SupabaseContextProvider({ children }) {
 	 */
 	const getItineraries = async () => {
 		const { data, error } = await supabase.from("itinerary").select().eq("itinerary_status", "normal");
-
-		return { data, error };
-	};
-
-	/**
-	 *
-	 * @returns all itineraries (even banned ones)
-	 */
-	const getAllItineraries = async () => {
-		const { data, error } = await supabase.from("itinerary").select();
 
 		return { data, error };
 	};
@@ -274,8 +264,7 @@ export function SupabaseContextProvider({ children }) {
 	/**
 	 * Bans the corresponding user and all of their posts
 	 * @param user_id id of the user to ban
-	 * @returns an object with banUserAuth, banUser, and
-	 * osts async functions
+	 * @returns an object with banUserAuth, banUser, and banUserPosts async functions
 	 */
 	const banUserId = (user_id: string) => {
 		if (userProfile?.role === "admin") {
@@ -298,7 +287,6 @@ export function SupabaseContextProvider({ children }) {
 					login,
 					logout,
 					getItineraries,
-					getAllItineraries,
 					getSavedItineraries,
 					saveItinerary,
 					getEvents,
@@ -374,10 +362,6 @@ type SupabaseContextType = {
 	}>;
 	logout: () => Promise<AuthError | null>;
 	getItineraries: () => Promise<{
-		data: Database["public"]["Tables"]["itinerary"]["Row"][] | null;
-		error: PostgrestError | null;
-	}>;
-	getAllItineraries: () => Promise<{
 		data: Database["public"]["Tables"]["itinerary"]["Row"][] | null;
 		error: PostgrestError | null;
 	}>;
