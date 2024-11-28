@@ -219,10 +219,6 @@ export default function AdminSearch() {
 		loadItineraries();
 	};
 
-	const handleViewReports = (postId) => {
-		console.log(`Viewing reports for postId: ${postId}`);
-	};
-
 	const filteredItineraries = itineraries.filter((itinerary) => {
 		const matchesStatus = filters.showBanned
 			? itinerary.itinerary_status === "banned"
@@ -363,9 +359,9 @@ export default function AdminSearch() {
 											Ban User
 										</button>
 									)}
-									<button className={styles.adminButton} onClick={() => handleViewReports(itinerary.post_id)}>
-										View Reports
-									</button>
+									<Link to={`/view-reports/${itinerary.post_id}`} className={styles.buttonLink}>
+										<button className={styles.adminButton}>View Reports</button>
+									</Link>
 								</div>
 							</div>
 						))}

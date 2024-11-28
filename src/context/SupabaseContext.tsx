@@ -149,23 +149,24 @@ export function SupabaseContextProvider({ children }) {
 			.from("saved")
 			.select(
 				`
-            itinerary (
-                post_id,
-                user_id,
-                post_name,
-                destination,
-                price_low,
-                price_high,
-                duration,
-                group_size,
-                is_family_friendly,
-                description,
-                image_url,
-                itinerary_status
-            )
-        `
+                itinerary (
+                    post_id,
+                    user_id,
+                    post_name,
+                    destination,
+                    price_low,
+                    price_high,
+                    duration,
+                    group_size,
+                    is_family_friendly,
+                    description,
+                    image_url,
+                    itinerary_status
+                )
+            `
 			)
-			.eq("user_id", user_id);
+			.eq("user_id", user_id)
+			.eq("itinerary.itinerary_status", "normal"); // Filter out banned itineraries
 
 		const savedItineraries = data?.map((saved) => saved?.itinerary).filter((itinerary) => itinerary !== null) || null;
 
@@ -326,6 +327,58 @@ export function SupabaseContextProvider({ children }) {
 		return { data, error };
 	};
 
+	/**
+	 * Fetches detailed reports for a specific post, including the name of the post and the user who reported it.
+	 * @param post_id ID of the itinerary for which to get reports
+	 * @returns Array of detailed reports containing `post_name`, `user_name`, `report_date`, and `reason`.
+	 */
+	const getDetailedReports = async (post_id) => {
+		const { data, error } = await supabase
+			.from("report")
+			.select(
+				`
+            post_id,
+            report_date,
+            reason,
+            user_id,
+            profile (
+                first_name, last_name
+            ),
+            itinerary (
+                post_name
+            )
+        `
+			)
+			.eq("post_id", post_id);
+
+		if (error) {
+			return { data: null, error };
+		}
+
+		const detailedReports = data.map((report) => ({
+			post_id: report.post_id,
+			post_name: report.itinerary?.post_name || "Unknown",
+			report_date: report.report_date,
+			reason: report.reason,
+			user_id: report.user_id,
+			user_name: `${report.profile?.first_name || "Unknown"} ${report.profile?.last_name || ""}`.trim(),
+		}));
+
+		return { data: detailedReports, error: null };
+	};
+
+	/**
+	 * Deletes a specific report by post ID and user ID.
+	 * @param postId ID of the post for which the report is to be deleted
+	 * @param userId ID of the user who created the report
+	 * @returns { error } if an error occurred, or null otherwise.
+	 */
+	const deleteReport = async (postId, userId) => {
+		const { error } = await supabase.from("report").delete().match({ post_id: postId, user_id: userId });
+
+		return { error };
+	};
+
 	return (
 		<>
 			<SupabaseContext.Provider
@@ -355,6 +408,8 @@ export function SupabaseContextProvider({ children }) {
 					unbanUserId,
 					getUserProfiles,
 					getAllItineraries,
+					getDetailedReports,
+					deleteReport,
 				}}
 			>
 				{children}
@@ -528,4 +583,18 @@ type SupabaseContextType = {
 		data: Database["public"]["Tables"]["itinerary"]["Row"][] | null;
 		error: PostgrestError | null;
 	}>;
+	getDetailedReports: (post_id: string) => Promise<{
+		data:
+			| {
+					post_id: string;
+					post_name: string;
+					report_date: string;
+					reason: string;
+					user_id: string;
+					user_name: string;
+			  }[]
+			| null;
+		error: PostgrestError | null;
+	}>;
+	deleteReport: (postId: string, userId: string) => Promise<{ error: PostgrestError | null }>;
 };
