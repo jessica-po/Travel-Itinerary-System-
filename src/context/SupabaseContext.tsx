@@ -108,8 +108,7 @@ export function SupabaseContextProvider({ children }) {
 		return { data, error };
 	};
 
-	
-    /**
+	/**
 	 *
 	 * @returns ratings made by all users
 	 */
@@ -119,7 +118,7 @@ export function SupabaseContextProvider({ children }) {
 		return { data, error };
 	};
 
-    /**
+	/**
 	 *
 	 * @returns total ratings for a specific post
 	 */
@@ -287,6 +286,47 @@ export function SupabaseContextProvider({ children }) {
 		}
 	};
 
+	/**
+	 * Unbans a specific post
+	 * @param postId ID of the itinerary to unban
+	 * @returns error if any error occurred
+	 */
+	const unbanPost = async (postId: string) => {
+		if (userProfile?.role === "admin") {
+			const { error } = await supabase.from("itinerary").update({ itinerary_status: "normal" }).eq("post_id", postId);
+
+			return error;
+		}
+	};
+
+	/**
+	 * Unbans a specific user and all their posts
+	 * @param userId ID of the user to unban
+	 * @returns an object with unbanUserAuth, unbanUser, and unbanUserPosts async functions
+	 */
+	const unbanUserId = (userId: string) => {
+		if (userProfile?.role === "admin") {
+			return {
+				unbanUserAuth: supabase.auth.admin.updateUserById(userId, { ban_duration: "0h" }),
+				unbanUser: supabase.from("profile").update({ profile_status: "normal" }).eq("user_id", userId),
+				unbanUserPosts: supabase.from("itinerary").update({ itinerary_status: "normal" }).eq("user_id", userId),
+			};
+		}
+	};
+
+	/**
+	 * Fetches user profiles for the given array of user IDs.
+	 * @param userIds Array of user IDs to fetch profiles for.
+	 * @returns Array of user profiles containing `user_id` and `profile_status`.
+	 */
+	const getUserProfiles = async (userIds: string[]) => {
+		if (!userIds.length) return { data: [], error: null };
+
+		const { data, error } = await supabase.from("profile").select("user_id, profile_status").in("user_id", userIds);
+
+		return { data, error };
+	};
+
 	return (
 		<>
 			<SupabaseContext.Provider
@@ -304,7 +344,7 @@ export function SupabaseContextProvider({ children }) {
 					getEvents,
 					insertEvents,
 					getRatings,
-                    getPostRatings,
+					getPostRatings,
 					getReports,
 					getUserItineraries,
 					uploadImage,
@@ -313,6 +353,9 @@ export function SupabaseContextProvider({ children }) {
 					upsertRating,
 					banPost,
 					banUserId,
+					unbanPost,
+					unbanUserId,
+					getUserProfiles,
 				}}
 			>
 				{children}
@@ -425,7 +468,7 @@ type SupabaseContextType = {
 			| null;
 		error: PostgrestError | null;
 	}>;
-    getPostRatings: () => Promise<{
+	getPostRatings: () => Promise<{
 		data:
 			| {
 					is_good: boolean;
@@ -480,4 +523,10 @@ type SupabaseContextType = {
 	}>;
 	banPost: (post_id: string) => Promise<PostgrestError | null | undefined>;
 	banUserId: any;
+	unbanPost: (post_id: string) => Promise<PostgrestError | null | undefined>;
+	unbanUserId: any;
+	getUserProfiles: (userIds: string[]) => Promise<{
+		data: { user_id: string; profile_status: string }[] | null;
+		error: PostgrestError | null;
+	}>;
 };

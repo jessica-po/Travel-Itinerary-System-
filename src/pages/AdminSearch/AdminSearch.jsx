@@ -8,7 +8,8 @@ import useSupabase from "../../context/SupabaseContext";
 export default function AdminSearch() {
 	const [itineraries, setItineraries] = useState([]);
 	const [ratings, setRatings] = useState([]);
-	const { getAllItineraries, getPostRatings, getReports, banPost, banUserId } = useSupabase();
+	const { getAllItineraries, getPostRatings, getReports, banPost, banUserId, unbanPost, unbanUserId, getUserProfiles } =
+		useSupabase();
 	const [reports, setReports] = useState([]);
 	const [filters, setFilters] = useState({
 		searchQuery: "",
@@ -22,6 +23,8 @@ export default function AdminSearch() {
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showBanModal, setShowBanModal] = useState(false);
 	const [selectedItinerary, setSelectedItinerary] = useState(null);
+	const [showUnbanUserModal, setShowUnbanUserModal] = useState(false);
+	const [showUnbanPostModal, setShowUnbanPostModal] = useState(false);
 
 	useEffect(() => {
 		document.title = "Admin Search - Travel Itineraries";
@@ -33,16 +36,36 @@ export default function AdminSearch() {
 	}, [ratings, reports]);
 
 	const loadItineraries = async () => {
-		const { data, error } = await getAllItineraries();
-		if (!error) {
-			console.log(data);
-			setItineraries(data);
-			loadRatings();
-			loadReports();
-		} else {
+		const { data: itinerariesData, error: itinerariesError } = await getAllItineraries();
+
+		if (itinerariesError) {
 			alert("Error loading itineraries. Check the console for more details.");
-			console.log(error);
+			console.error(itinerariesError);
+			return;
 		}
+
+		// Fetch user profiles for all users that have itineraries
+		const userIds = [...new Set(itinerariesData.map((itinerary) => itinerary.user_id))];
+		const { data: userProfiles, error: userProfilesError } = await getUserProfiles(userIds);
+
+		if (userProfilesError) {
+			alert("Error loading user profiles. Check the console for more details.");
+			console.error(userProfilesError);
+			return;
+		}
+
+		// Merge user profile status into itineraries
+		const enrichedItineraries = itinerariesData.map((itinerary) => {
+			const userProfile = userProfiles.find((profile) => profile.user_id === itinerary.user_id);
+			return {
+				...itinerary,
+				user_status: userProfile ? userProfile.profile_status : "normal",
+			};
+		});
+
+		setItineraries(enrichedItineraries);
+		loadRatings();
+		loadReports();
 	};
 
 	const loadReports = async () => {
@@ -112,6 +135,16 @@ export default function AdminSearch() {
 		setShowBanModal(true);
 	};
 
+	const handleUnbanUser = (userId) => {
+		setSelectedItinerary(userId);
+		setShowUnbanUserModal(true);
+	};
+
+	const handleUnbanPost = (postId) => {
+		setSelectedItinerary(postId);
+		setShowUnbanPostModal(true);
+	};
+
 	const confirmDeleteItinerary = async () => {
 		console.log(`Deleting itinerary with postId: ${selectedItinerary}`);
 		const error = await banPost(selectedItinerary);
@@ -124,6 +157,7 @@ export default function AdminSearch() {
 		}
 		setShowDeleteModal(false);
 		setSelectedItinerary(null);
+		loadItineraries();
 	};
 
 	const confirmBanUser = async () => {
@@ -146,16 +180,50 @@ export default function AdminSearch() {
 		}
 		setShowBanModal(false);
 		setSelectedItinerary(null);
+		loadItineraries();
+	};
+
+	const confirmUnbanUser = async () => {
+		try {
+			const error = await unbanUserId(selectedItinerary);
+			if (error) {
+				console.error("Error unbanning user:", error.message);
+				alert("Failed to unban user. Please try again.");
+			} else {
+				alert("User unbanned successfully!");
+			}
+		} catch (error) {
+			console.error("Error unbanning user:", error);
+			alert("Failed to unban user. Please try again.");
+		}
+		setShowUnbanUserModal(false);
+		setSelectedItinerary(null);
+		loadItineraries();
+	};
+
+	const confirmUnbanPost = async () => {
+		try {
+			const error = await unbanPost(selectedItinerary);
+			if (error) {
+				console.error("Error unbanning post:", error.message);
+				alert("Failed to unban post. Please try again.");
+			} else {
+				alert("Post unbanned successfully!");
+			}
+		} catch (error) {
+			console.error("Error unbanning post:", error);
+			alert("Failed to unban post. Please try again.");
+		}
+		setShowUnbanPostModal(false);
+		setSelectedItinerary(null);
+		loadItineraries();
 	};
 
 	const handleViewReports = (postId) => {
-		// Logic to view the reports of an itinerary
 		console.log(`Viewing reports for postId: ${postId}`);
-		// Redirect or open modal to view the reports related to the itinerary
 	};
 
 	const filteredItineraries = itineraries.filter((itinerary) => {
-		console.log(itinerary.itinerary_status === "banned");
 		const matchesStatus = filters.showBanned
 			? itinerary.itinerary_status === "banned"
 			: itinerary.itinerary_status !== "banned";
@@ -276,12 +344,25 @@ export default function AdminSearch() {
 									</div>
 								</Link>
 								<div className={styles.adminButtons}>
-									<button className={styles.adminButton} onClick={() => handleDeleteItinerary(itinerary.post_id)}>
-										Delete Itinerary
-									</button>
-									<button className={styles.adminButton} onClick={() => handleBanUser(itinerary.user_id)}>
-										Ban User
-									</button>
+									{itinerary.itinerary_status === "banned" ? (
+										<button className={styles.adminButton} onClick={() => handleUnbanPost(itinerary.post_id)}>
+											Unban Post
+										</button>
+									) : (
+										<button className={styles.adminButton} onClick={() => handleDeleteItinerary(itinerary.post_id)}>
+											Ban Post
+										</button>
+									)}
+
+									{itinerary.user_status === "banned" ? (
+										<button className={styles.adminButton} onClick={() => handleUnbanUser(itinerary.user_id)}>
+											Unban User
+										</button>
+									) : (
+										<button className={styles.adminButton} onClick={() => handleBanUser(itinerary.user_id)}>
+											Ban User
+										</button>
+									)}
 									<button className={styles.adminButton} onClick={() => handleViewReports(itinerary.post_id)}>
 										View Reports
 									</button>
@@ -317,6 +398,38 @@ export default function AdminSearch() {
 									Yes
 								</button>
 								<button className={styles.cancelButton} onClick={() => setShowBanModal(false)}>
+									Cancel
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
+				{showUnbanUserModal && (
+					<div className={styles.modalOverlay}>
+						<div className={styles.modalContent}>
+							<h3>Confirm Unban User</h3>
+							<p>Are you sure you want to unban this user?</p>
+							<div className={styles.modalButtons}>
+								<button className={styles.confirmButton} onClick={confirmUnbanUser}>
+									Yes
+								</button>
+								<button className={styles.cancelButton} onClick={() => setShowUnbanUserModal(false)}>
+									Cancel
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
+				{showUnbanPostModal && (
+					<div className={styles.modalOverlay}>
+						<div className={styles.modalContent}>
+							<h3>Confirm Unban Post</h3>
+							<p>Are you sure you want to unban this post?</p>
+							<div className={styles.modalButtons}>
+								<button className={styles.confirmButton} onClick={confirmUnbanPost}>
+									Yes
+								</button>
+								<button className={styles.cancelButton} onClick={() => setShowUnbanPostModal(false)}>
 									Cancel
 								</button>
 							</div>
