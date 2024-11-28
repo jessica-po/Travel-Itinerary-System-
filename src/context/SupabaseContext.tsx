@@ -316,6 +316,16 @@ export function SupabaseContextProvider({ children }) {
 		return { data, error };
 	};
 
+	/**
+	 *
+	 * @returns all itineraries (even banned ones)
+	 */
+	const getAllItineraries = async () => {
+		const { data, error } = await supabase.from("itinerary").select();
+
+		return { data, error };
+	};
+
 	return (
 		<>
 			<SupabaseContext.Provider
@@ -344,6 +354,7 @@ export function SupabaseContextProvider({ children }) {
 					unbanPost,
 					unbanUserId,
 					getUserProfiles,
+					getAllItineraries,
 				}}
 			>
 				{children}
@@ -511,6 +522,10 @@ type SupabaseContextType = {
 	unbanUserId: any;
 	getUserProfiles: (userIds: string[]) => Promise<{
 		data: { user_id: string; profile_status: string }[] | null;
+		error: PostgrestError | null;
+	}>;
+	getAllItineraries: () => Promise<{
+		data: Database["public"]["Tables"]["itinerary"]["Row"][] | null;
 		error: PostgrestError | null;
 	}>;
 };
