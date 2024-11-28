@@ -79,7 +79,11 @@ export default function Home() {
             <Stack spacing={5}>
                 <Card>
                     <CardContent>
-                        <Typography variant="h2">Welcome to Travel Itineraries!</Typography>
+                            <Typography variant="h2">
+                                {userProfile?.first_name
+                                ? `Welcome to Travel Itineraries, ${userProfile.first_name}!`
+                                : "Welcome to Travel Itineraries!"}
+                        </Typography>
                         <Typography variant="subtitle1">Here you can find all the best itinerary plans, made for travellers like you, by travellers like you.</Typography>
                     </CardContent>
                 </Card>

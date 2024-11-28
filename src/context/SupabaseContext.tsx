@@ -379,6 +379,28 @@ export function SupabaseContextProvider({ children }) {
 		return { error };
 	};
 
+		/**
+ *
+ * @param userId ID of the user attempting to delete the itinerary
+ * @param postId ID of the itinerary to be deleted
+ * @returns result of the deletion
+ */
+const deleteItinerary = async (userId, postId) => {
+    // Ensure only the owner can delete the itinerary
+    const { data, error } = await supabase
+        .from("itinerary")
+        .delete()
+        .eq("post_id", postId)
+        .eq("user_id", userId); // Verify the user_id matches
+
+    if (error) {
+        console.error("Error deleting itinerary:", error);
+    }
+
+    return { data, error };
+};
+
+
 	return (
 		<>
 			<SupabaseContext.Provider
@@ -410,6 +432,7 @@ export function SupabaseContextProvider({ children }) {
 					getAllItineraries,
 					getDetailedReports,
 					deleteReport,
+					deleteItinerary,
 				}}
 			>
 				{children}
