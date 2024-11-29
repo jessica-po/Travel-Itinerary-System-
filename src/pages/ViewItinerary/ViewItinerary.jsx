@@ -28,6 +28,7 @@ export default function ViewItinerary() {
 	} = useSupabase();
 	const [filteredEvents, setFilteredEvents] = useState([]);
 	const [itinerary, setItinerary] = useState({});
+    const [postRating, setPostRating] = useState(0);
 	const [myRating, setMyRating] = useState([]);
 	const [showReportModal, setShowReportModal] = useState(false);
 	const [reportReason, setReportReason] = useState("");
@@ -365,7 +366,10 @@ export default function ViewItinerary() {
 					<div className={styles.rightButtonGroup}>
 						{userProfile?.role === "admin" && (
 							<>
-								<Button color="error" onClick={handleBanPost}>
+								<Button color="error" onClick={handleClearReports}>
+									Clear Reports
+								</Button>
+                                <Button color="error" onClick={handleBanPost}>
 									Ban Post
 								</Button>
 								<Button color="error" onClick={handleBanUser}>
@@ -394,7 +398,7 @@ export default function ViewItinerary() {
 						<h1 className={styles.title}>{itinerary.post_name}</h1>
 						<div className={styles.ratingContainer}>
 							<strong>Rating: </strong>{" "}
-							{myRating?.is_good !== undefined ? `${myRating.is_good ? "100%" : "0%"}` : "__%"}
+							<span className={styles.postRating}>{postRating}%</span>
 							<ButtonGroup className={styles.ratingButtonGroup}>
 								<Button variant={myRating?.is_good ? "contained" : "outlined"} onClick={(e) => handleSubmit(e, true)}>
 									<ThumbUpIcon />
@@ -462,7 +466,55 @@ export default function ViewItinerary() {
 					</table>
 				</div>
 			</div>
-			{showReportModal && (
+			{showClearReportsModal && (
+				<div className={styles.modalOverlay}>
+					<div className={styles.modalContent}>
+						<h3>Confirm Clear Reports</h3>
+						<p>Are you sure you want to delete all reports for this itinerary?</p>
+						<div className={styles.modalButtons}>
+							<button component={Link} className={styles.confirmButton} onClick={confirmClearReports}>
+								Yes
+							</button>
+							<button className={styles.cancelButton} onClick={() => setShowClearReportsModal(false)}>
+								Cancel
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+            {showBanPostModal && (
+				<div className={styles.modalOverlay}>
+					<div className={styles.modalContent}>
+						<h3>Confirm Ban Post</h3>
+						<p>Are you sure you want to ban this itinerary?</p>
+						<div className={styles.modalButtons}>
+							<button component={Link} className={styles.confirmButton} onClick={confirmBanPost}>
+								Yes
+							</button>
+							<button className={styles.cancelButton} onClick={() => setShowBanPostModal(false)}>
+								Cancel
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+            {showBanUserModal && (
+				<div className={styles.modalOverlay}>
+					<div className={styles.modalContent}>
+						<h3>Confirm Ban User</h3>
+						<p>Are you sure you want to ban this user?</p>
+						<div className={styles.modalButtons}>
+							<button className={styles.confirmButton} onClick={confirmBanUser}>
+								Yes
+							</button>
+							<button className={styles.cancelButton} onClick={() => setShowBanUserModal(false)}>
+								Cancel
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+            {showReportModal && (
 				<div className={styles.modalOverlay}>
 					<div className={styles.modalContent}>
 						<h3>Report Itinerary</h3>
