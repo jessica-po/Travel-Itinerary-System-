@@ -69,7 +69,19 @@ export default function AccountDetails() {
         return;
       }
 
-      setSuccess('Name credentials successfully updated.');
+      // Update display_name in auth system
+      const { error: updateUserError } = await supabase.auth.updateUser({
+        data: {
+          display_name: `${firstName} ${lastName}`.trim()
+        }
+      });
+
+      if (updateUserError) {
+        setError('Error updating display name: ' + updateUserError.message);
+        return;
+      }
+
+      setSuccess('Name credentials and display name successfully updated.');
     } catch (err) {
       setError('Unexpected error occurred: ' + err.message);
     } finally {
@@ -220,4 +232,3 @@ export default function AccountDetails() {
     </div>
   );
 }
-

@@ -3,99 +3,104 @@ import { Link, useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import useSupabase from "../../context/SupabaseContext";
 
-export default function Login() {
-    const navigate = useNavigate();
-    const [formData, setFormData] = useState({ email: '', password: '' });
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const { login, user } = useSupabase();
+const Login = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login, user } = useSupabase();
 
-    useEffect(() => {
-        document.title = "Login - Travel Itineraries";
-    }, []);
+  useEffect(() => {
+    document.title = "Login - Travel Itineraries";
+  }, []);
 
-    useEffect(() => {
-        if (user) {
-            // Navigate to home page after successful login
-            navigate('/', { 
-                replace: true, // replace the current page in history
-                state: { message: 'Login successful!' } // optional state to pass
-            });
-        }
-    }, [user]);
+  useEffect(() => {
+    if (user) {
+      navigate('/', { 
+        replace: true, 
+        state: { message: 'Login successful!' }
+      });
+    }
+  }, [user]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
 
-        // Make sure all fields are entered
-        if (!formData.email || !formData.password) {
-            setError('All Fields Are Required');
-            setLoading(false);
-            return;
-        }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-        try {
-            const { data, error } = await login({
-                email: formData.email,
-                password: formData.password
-            });
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all fields.');
+      setLoading(false);
+      return;
+    }
 
-            if (error) throw error;
+    try {
+      const { data, error } = await login({
+        email: formData.email,
+        password: formData.password
+      });
 
-            // Show the (correct) user data
-            console.log(data.user);
+      if (error) throw error;
 
-            // Clear form data
-            setFormData({ email: '', password: '' });
-        } catch (err) {
-            setError(err.message); // Set the error if authentication fails
-        } finally {
-            setLoading(false);
-        }
-    };
+      setFormData({ email: '', password: '' }); 
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div className="login">
-            <h2 className="header">Login</h2>
-            <form onSubmit={handleSubmit} className={styles.form}>
-                <div className={styles.formGroup}>
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className={styles.input}
-                    />
-                </div>
+  return (
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <h2 className={styles.title}>Login</h2>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.inputGroup}>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Address"
+              value={formData.email}
+              onChange={handleInputChange}
+              className={styles.input}
+              autoFocus
+            />
+          </div>
 
-                <div className={styles.formGroup}>
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="Password"
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className={styles.input}
-                    />
-                </div>
+          <div className={styles.inputGroup}>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className={styles.input}
+            />
+          </div>
 
-                {error && <div className={styles.error}>{error}</div>}
+          {error && <div className={styles.errorMessage}>{error}</div>}
 
-                <button
-                    type="submit"
-                    className={styles.button}
-                    disabled={loading}
-                >
-                    {loading ? 'Logging In...' : 'Login'}
-                </button>
+          <button
+            type="submit"
+            className={styles.submitButton}
+            disabled={loading}
+          >
+            {loading ? 'Logging In...' : 'Login'}
+          </button>
 
-                <div className={styles.loginLink}>
-                    Don't have an account? <Link to="/register">Register here</Link>
-                </div>
-            </form>
-        </div>
-    );
-}
+          <div className={styles.registerLink}>
+            Don't have an account? <Link to="/register">Register here</Link>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
+
