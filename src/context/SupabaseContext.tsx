@@ -379,27 +379,36 @@ export function SupabaseContextProvider({ children }) {
 		return { error };
 	};
 
-		/**
- *
- * @param userId ID of the user attempting to delete the itinerary
- * @param postId ID of the itinerary to be deleted
- * @returns result of the deletion
- */
-const deleteItinerary = async (userId, postId) => {
-    // Ensure only the owner can delete the itinerary
-    const { data, error } = await supabase
-        .from("itinerary")
-        .delete()
-        .eq("post_id", postId)
-        .eq("user_id", userId); // Verify the user_id matches
+	/**
+	 *
+	 * @param userId ID of the user attempting to delete the itinerary
+	 * @param postId ID of the itinerary to be deleted
+	 * @returns result of the deletion
+	 */
+	const deleteItinerary = async (userId, postId) => {
+		// Ensure only the owner can delete the itinerary
+		const { data, error } = await supabase.from("itinerary").delete().eq("post_id", postId).eq("user_id", userId); // Verify the user_id matches
 
-    if (error) {
-        console.error("Error deleting itinerary:", error);
-    }
+		if (error) {
+			console.error("Error deleting itinerary:", error);
+		}
 
-    return { data, error };
-};
+		return { data, error };
+	};
 
+	/**
+	 * Inserts a new report into the report table.
+	 * @param report The report details including post ID, user ID, and the reason for the report.
+	 * @returns An object containing an error if an error occurred, or null otherwise.
+	 */
+	const insertReport = async ({ post_id, user_id, reason }) => {
+		const { error } = await supabase.from("report").insert({
+			post_id,
+			user_id,
+			reason,
+		});
+		return { error };
+	};
 
 	return (
 		<>
@@ -433,6 +442,7 @@ const deleteItinerary = async (userId, postId) => {
 					getDetailedReports,
 					deleteReport,
 					deleteItinerary,
+					insertReport,
 				}}
 			>
 				{children}
@@ -620,4 +630,9 @@ type SupabaseContextType = {
 		error: PostgrestError | null;
 	}>;
 	deleteReport: (postId: string, userId: string) => Promise<{ error: PostgrestError | null }>;
+	insertReport: (report: {
+		post_id: string;
+		user_id: string;
+		reason: string;
+	}) => Promise<{ error: PostgrestError | null }>;
 };

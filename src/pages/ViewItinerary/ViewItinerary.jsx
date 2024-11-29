@@ -22,10 +22,13 @@ export default function ViewItinerary() {
 		banPost,
 		banUserId,
 		saveItinerary,
+		getReports,
 	} = useSupabase();
 	const [filteredEvents, setFilteredEvents] = useState([]);
 	const [itinerary, setItinerary] = useState({});
 	const [myRating, setMyRating] = useState([]);
+	const [showReportModal, setShowReportModal] = useState(false);
+	const [reportReason, setReportReason] = useState("");
 	// const [userId, setUserId] = useState(null);
 	//const [myRateIsGood, setMyRateIsGood] = useState(false);
 	const [googleCalendarUrl, setGoogleCalendarUrl] = useState("https://calendar.google.com/calendar/u/0/r/eventedit");
@@ -254,138 +257,197 @@ export default function ViewItinerary() {
 		}
 	};
 
+	const handleReportClick = () => {
+		setShowReportModal(true);
+	};
+
+	const handleCloseReportModal = () => {
+		setShowReportModal(false);
+		setReportReason("");
+	};
+
+	const handleSubmitReport = async () => {
+		if (!user || !postId) {
+			alert("You must be logged in to report an itinerary.");
+			return;
+		}
+
+		if (!reportReason) {
+			alert("Please provide a reason for the report.");
+			return;
+		}
+
+		try {
+			// Check if the report already exists
+			const { data: existingReports, error: reportError } = await getReports();
+			if (reportError) {
+				console.error("Error fetching reports:", reportError);
+				alert("Failed to check existing reports. Please try again.");
+				return;
+			}
+
+			// If a report already exists for this post by this user, show an error
+			const duplicateReport = existingReports.find((report) => report.post_id === postId && report.user_id === user.id);
+			if (duplicateReport) {
+				alert("You have already reported this itinerary.");
+				return;
+			}
+
+			// Proceed with inserting the report
+			const { error } = await insertReport({
+				post_id: postId,
+				user_id: user.id,
+				reason: reportReason,
+			});
+
+			if (error) {
+				console.error("Error submitting report:", error);
+				alert("Failed to submit the report. Please try again.");
+			} else {
+				alert("Report submitted successfully.");
+				setShowReportModal(false);
+				setReportReason(""); // Clear the input after successful submission
+			}
+		} catch (err) {
+			console.error("Error submitting report:", err);
+			alert("An unexpected error occurred. Please try again.");
+		}
+	};
+
 	return (
-		<div className={styles.viewItinerary}>
-			<h1>{itinerary.post_name}</h1>
-			<ButtonGroup variant="contained" size="large">
-				{(!userProfile || userProfile?.role === "traveller") && (
-					<>
-						<Button onClick={handleSaveItinerary}>Save Itinerary</Button>
-					</>
-				)}
-				<Button component={Link} to={`/comments/${itinerary.post_id}`}>
-					Comments
-				</Button>
-				{(!userProfile || userProfile?.role === "traveller") && (
-					<>
+		<>
+			<div className={styles.viewItinerary}>
+				<div className={styles.buttonGroupContainer}>
+					<div className={styles.leftButtonGroup}>
+						{(!userProfile || userProfile?.role === "traveller") && (
+							<Button onClick={handleSaveItinerary}>Save Itinerary</Button>
+						)}
 						<Button component={Link} to={googleCalendarUrl} rel="noopener" target="_blank">
 							Add to Google Calendar <OpenInNewIcon />
 						</Button>
-						<Button component={Link} to={`/report-form/${itinerary.post_id}`}>
-							Report WIP
-						</Button>
-					</>
-				)}
-				{userProfile?.role === "admin" && (
-					<>
-						<Button color="error" onClick={handleBanPost}>
-							Ban Post
-						</Button>
-						<Button color="error" onClick={handleBanUser}>
-							Ban Poster
-						</Button>
-					</>
-				)}
-			</ButtonGroup>
-			Rating: __%
-			<ButtonGroup>
-				<Button variant={myRating?.is_good ? "contained" : "outlined"} onClick={(e) => handleSubmit(e, true)}>
-					<ThumbUpIcon />
-				</Button>
-				<Button
-					variant={myRating?.is_good === false ? "contained" : "outlined"}
-					onClick={(e) => handleSubmit(e, false)}
-				>
-					<ThumbDownIcon />
-				</Button>
-			</ButtonGroup>
-			<div className={styles.eventsContainer}>
-				<table className={styles.itineraryTable}>
-					<thead>
-						<tr>
-							<th>Day</th>
-							<th>Time</th>
-							<th>Location</th>
-						</tr>
-					</thead>
-					<tbody>
-						{filteredEvents.length > 0 ? (
-							filteredEvents.map((event) => (
-								<tr key={`${event.post_id}-${event.day}-${event.time}`} className={styles.eventItem}>
-									<td className={styles.eventDetails}>
-										<span className={styles.day}>Day {event.day}</span>
-									</td>
-									<td className={styles.eventDetails}>
-										<span className={styles.time}>{event.time}</span>
-									</td>
-									<td className={styles.eventDetails}>
-										<span className={styles.location}>{event.location}</span>
-									</td>
-								</tr>
-							))
-						) : (
-							<p>No events.</p>
+					</div>
+					<div className={styles.rightButtonGroup}>
+						{userProfile?.role === "admin" && (
+							<>
+								<Button color="error" onClick={handleBanPost}>
+									Ban Post
+								</Button>
+								<Button color="error" onClick={handleBanUser}>
+									Ban Poster
+								</Button>
+							</>
 						)}
-					</tbody>
-				</table>
+						{(!userProfile || userProfile?.role === "traveller") && (
+							<>
+								<Button component={Link} onClick={handleReportClick}>
+									Report
+								</Button>
+								<Button component={Link} to={`/comments/${itinerary.post_id}`}>
+									Comments
+								</Button>
+							</>
+						)}
+					</div>
+				</div>
+
+				<div className={styles.itineraryDetailsContainer}>
+					<div className={styles.itineraryImageContainer}>
+						<img src={itinerary.image_url} alt={itinerary.post_name} className={styles.itineraryImage} />
+					</div>
+					<div className={styles.itineraryDetails}>
+						<h1 className={styles.title}>{itinerary.post_name}</h1>
+						<div className={styles.ratingContainer}>
+							<strong>Rating: </strong>{" "}
+							{myRating?.is_good !== undefined ? `${myRating.is_good ? "100%" : "0%"}` : "__%"}
+							<ButtonGroup className={styles.ratingButtonGroup}>
+								<Button variant={myRating?.is_good ? "contained" : "outlined"} onClick={(e) => handleSubmit(e, true)}>
+									<ThumbUpIcon />
+								</Button>
+								<Button
+									variant={myRating?.is_good === false ? "contained" : "outlined"}
+									onClick={(e) => handleSubmit(e, false)}
+								>
+									<ThumbDownIcon />
+								</Button>
+							</ButtonGroup>
+						</div>
+						<p>
+							<strong>Destination:</strong> {itinerary.destination}
+						</p>
+						<p>
+							<strong>Price Range:</strong> ${itinerary.price_low} - ${itinerary.price_high}
+						</p>
+						<p>
+							<strong>Duration:</strong> {itinerary.duration} days
+						</p>
+						<p>
+							<strong>Group Size:</strong> {itinerary.group_size} people
+						</p>
+						<p>
+							<strong>Family Friendly:</strong> {itinerary.is_family_friendly ? "Yes" : "No"}
+						</p>
+						<p>
+							<strong>Description:</strong> {itinerary.description}
+						</p>
+					</div>
+				</div>
+
+				<div className={styles.eventsContainer}>
+					<h2>Events</h2>
+					<table className={styles.itineraryTable}>
+						<thead>
+							<tr>
+								<th>Day</th>
+								<th>Time</th>
+								<th>Location</th>
+							</tr>
+						</thead>
+						<tbody>
+							{filteredEvents.length > 0 ? (
+								filteredEvents.map((event) => (
+									<tr key={`${event.post_id}-${event.day}-${event.time}`} className={styles.eventItem}>
+										<td className={styles.eventDetails}>
+											<span className={styles.day}>Day {event.day}</span>
+										</td>
+										<td className={styles.eventDetails}>
+											<span className={styles.time}>{event.time}</span>
+										</td>
+										<td className={styles.eventDetails}>
+											<span className={styles.location}>{event.location}</span>
+										</td>
+									</tr>
+								))
+							) : (
+								<tr>
+									<td colSpan="3">No events.</td>
+								</tr>
+							)}
+						</tbody>
+					</table>
+				</div>
 			</div>
-			{itinerary ? (
-				<div className={styles.itineraryDetails}>
-					<p>
-						<strong>Destination:</strong> {itinerary.destination}
-					</p>
-					<p>
-						<strong>Price Range:</strong> ${itinerary.price_low} - ${itinerary.price_high}
-					</p>
-					<p>
-						<strong>Duration:</strong> {itinerary.duration} days
-					</p>
-					<p>
-						<strong>Group Size:</strong> {itinerary.group_size} people
-					</p>
-					<p>
-						<strong>Family Friendly:</strong> {itinerary.is_family_friendly ? "Yes" : "No"}
-					</p>
-					<p>
-						<strong></strong> {itinerary.description}{" "}
-					</p>
-					<img src={itinerary.image_url} alt={itinerary.post_name} className={styles.itineraryImage} />
-				</div>
-			) : (
-				<p>No itinerary found for this post_id.</p>
-			)}
-			{showBanPostModal && (
+			{showReportModal && (
 				<div className={styles.modalOverlay}>
 					<div className={styles.modalContent}>
-						<h3>Confirm Ban Post</h3>
-						<p>Are you sure you want to ban this itinerary?</p>
+						<h3>Report Itinerary</h3>
+						<textarea
+							value={reportReason}
+							onChange={(e) => setReportReason(e.target.value)}
+							className={styles.modalInput}
+							placeholder="Enter reason for report"
+						/>
+
 						<div className={styles.modalButtons}>
-							<button className={styles.confirmButton} onClick={confirmBanPost}>
-								Yes
+							<button className={styles.confirmButton} onClick={handleSubmitReport}>
+								Submit
 							</button>
-							<button className={styles.cancelButton} onClick={() => setShowBanPostModal(false)}>
+							<button className={styles.cancelButton} onClick={handleCloseReportModal}>
 								Cancel
 							</button>
 						</div>
 					</div>
 				</div>
 			)}
-			{showBanUserModal && (
-				<div className={styles.modalOverlay}>
-					<div className={styles.modalContent}>
-						<h3>Confirm Ban User</h3>
-						<p>Are you sure you want to ban this user?</p>
-						<div className={styles.modalButtons}>
-							<button className={styles.confirmButton} onClick={confirmBanUser}>
-								Yes
-							</button>
-							<button className={styles.cancelButton} onClick={() => setShowBanUserModal(false)}>
-								Cancel
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
-		</div>
+		</>
 	);
 }
