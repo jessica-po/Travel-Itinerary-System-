@@ -424,6 +424,36 @@ export function SupabaseContextProvider({ children }) {
 		return { error };
 	};
 
+	// Fetch all comments for a given itinerary (post_id)
+const getComments = async (postId) => {
+    const { data, error } = await supabase
+        .from("comments")
+        .select("*")
+        .eq("post_id", postId)
+        .order("created_at", { ascending: false });
+
+    return { data, error };
+};
+
+const addComment = async ({ post_id, user_id, comment, first_name, last_name }) => {
+    const { data, error } = await supabase
+        .from("comments")
+        .insert({ post_id, user_id, comment, first_name, last_name })
+        .select("*"); // Ensures the inserted row is returned
+
+    return { data, error };
+};
+
+const deleteComment = async (commentId) => {
+    const { error } = await supabase
+        .from("comments")
+        .delete()
+        .eq("comment_id", commentId); // Use comment_id to target the specific comment
+
+    return { error };
+};
+
+
 	return (
 		<>
 			<SupabaseContext.Provider
@@ -458,6 +488,9 @@ export function SupabaseContextProvider({ children }) {
 					deleteReport,
 					deleteItinerary,
 					insertReport,
+					addComment, 
+					getComments, 
+					deleteComment,
 				}}
 			>
 				{children}

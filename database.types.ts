@@ -38,6 +38,41 @@ export type Database = {
           },
         ]
       }
+      comments: {
+        Row: {
+          post_id: string
+          user_id: string
+          comment: string
+          created_at: string
+          first_name: string
+          last_name: string
+        }
+        Insert: {
+          post_id: string
+          user_id: string
+          comment: string
+          created_at?: string
+          first_name: string
+          last_name: string
+        }
+        Update: {
+          post_id?: string
+          user_id?: string
+          comment?: string
+          created_at?: string
+          first_name?: string
+          last_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "itinerary"
+            referencedColumns: ["post_id"]
+          }
+        ]
+      }
       itinerary: {
         Row: {
           description: string | null
