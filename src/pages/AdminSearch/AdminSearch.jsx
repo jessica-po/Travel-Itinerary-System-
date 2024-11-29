@@ -8,8 +8,17 @@ import useSupabase from "../../context/SupabaseContext";
 export default function AdminSearch() {
 	const [itineraries, setItineraries] = useState([]);
 	const [ratings, setRatings] = useState([]);
-	const { getAllItineraries, getPostRatings, getReports, clearReports, banPost, banUserId, unbanPost, unbanUserId, getUserProfiles } =
-		useSupabase();
+	const {
+		getAllItineraries,
+		getPostRatings,
+		getReports,
+		clearReports,
+		banPost,
+		banUserId,
+		unbanPost,
+		unbanUserId,
+		getUserProfiles,
+	} = useSupabase();
 	const [reports, setReports] = useState([]);
 	const [filters, setFilters] = useState({
 		searchQuery: "",
@@ -380,9 +389,9 @@ export default function AdminSearch() {
 											Ban User
 										</button>
 									)}
-									<button className={styles.adminButton} onClick={() => handleViewReports(itinerary.post_id)}>
-										View Reports
-									</button>
+									<Link to={`/view-reports/${itinerary.post_id}`} className={styles.buttonLink}>
+										<button className={styles.adminButton}>View Reports</button>
+									</Link>
 									<button className={styles.adminButton} onClick={() => handleClearReports(itinerary.post_id)}>
 										Clear Reports
 									</button>
