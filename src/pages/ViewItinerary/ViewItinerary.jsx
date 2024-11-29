@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import styles from "./ViewItinerary.module.css";
 import { Button, ButtonGroup } from "@mui/material";
@@ -12,6 +12,7 @@ export default function ViewItinerary() {
 	const [events, setEvents] = useState([]);
 	const {
 		getItineraries,
+        getPostRatings,
 		getEvents,
 		getRatings,
 		upsertRating,
@@ -19,24 +20,30 @@ export default function ViewItinerary() {
 		insertRating,
 		user,
 		userProfile,
+        clearReports,
 		banPost,
 		banUserId,
 		saveItinerary,
 	} = useSupabase();
 	const [filteredEvents, setFilteredEvents] = useState([]);
 	const [itinerary, setItinerary] = useState({});
-	const [myRating, setMyRating] = useState([]);
+	const [myRating, setMyRating] = useState({is_good: null});
+    const [postRating, setPostRating] = useState(0);
 	// const [userId, setUserId] = useState(null);
 	//const [myRateIsGood, setMyRateIsGood] = useState(false);
 	const [googleCalendarUrl, setGoogleCalendarUrl] = useState("https://calendar.google.com/calendar/u/0/r/eventedit");
 	const [showBanPostModal, setShowBanPostModal] = useState(false);
 	const [showBanUserModal, setShowBanUserModal] = useState(false);
+    const [showClearReportsModal, setShowClearReportsModal] = useState(false);
+    const navigate = useNavigate(); 
 
 	useEffect(() => {
 		document.title = "View Itinerary - Travel Itineraries";
 		if (postId) {
 			loadEvents();
 			loadItineraries();
+            loadPostRatings();
+            
 			if (user) {
 				if (user.id) loadMyRating();
 			}
@@ -80,11 +87,27 @@ export default function ViewItinerary() {
 		}
 	};
 
+    const loadPostRatings = async () => {
+		const { data, error } = await getPostRatings();
+		if (!error) {
+			const matchedGoodPostRating = data.find((post) => post.post_id === postId && post.is_good === true) || { total: 0 };
+            const matchedBadPostRating = data.find((post) => post.post_id === postId && post.is_good === false) || { total: 0 };
+            const total = matchedGoodPostRating.total + matchedBadPostRating.total;
+
+            const calcPostRating = total === 0 ? 0 : Math.round((100 * matchedGoodPostRating.total / total));
+            setPostRating(calcPostRating); 
+			
+		} else {
+			console.error("Error fetching postRating:", error);
+		}
+	};
+
 	const loadMyRating = async () => {
 		const { data, error } = await getRatings();
 		if (!error) {
-			const matchedRating = data.find((rating) => rating.user_id === user.id);
+			const matchedRating = data.find((rating) => rating.user_id === user.id && rating.post_id === postId);
 			setMyRating(matchedRating);
+            
 		} else {
 			console.error("Error fetching myRating:", error);
 		}
@@ -102,8 +125,6 @@ export default function ViewItinerary() {
 			return;
 		}
 
-		setMyRating({ ...myRating, is_good: myRateIsGood });
-
 		try {
 			const newRating = {
 				user_id: user.id,
@@ -116,17 +137,13 @@ export default function ViewItinerary() {
 				console.error("Error inserting rating:", ratingError);
 				return;
 			}
+            setMyRating({ ...myRating, is_good: myRateIsGood });
+            await loadPostRatings();
 
-			return;
 		} catch (err) {
 			alert(err);
 		}
 
-		if (ratingError) {
-			console.error("Failed to rate itinerary:", ratingError);
-			alert("Failed to rate itinerary. Please try again.");
-			return;
-		}
 		console.log("Rating inserted:", ratingData);
 	};
 
@@ -162,14 +179,35 @@ export default function ViewItinerary() {
 		setShowBanUserModal(true);
 	};
 
+    const handleClearReports = () => {
+		setShowClearReportsModal(true);
+	};
+
+    const confirmClearReports = async () => {
+        const error = await clearReports(itinerary.post_id);
+
+
+        if (error) {
+            alert(error.message);
+            console.error(error);
+        } else {
+			alert("Reports have been cleared.");
+            //navigate('/../admin-search');
+		}
+		setShowClearReportsModal(false);
+    };
+
+
 	const confirmBanPost = async () => {
 		const error = await banPost(itinerary.post_id);
+        
 
 		if (error) {
 			alert(error.message);
 			console.error(error);
 		} else {
 			alert("Itinerary has been banned.");
+            navigate('/../admin-search');
 		}
 		setShowBanPostModal(false);
 	};
@@ -186,6 +224,7 @@ export default function ViewItinerary() {
 			if (response[2].error) console.error(response[2].error);
 		} else {
 			alert("User banned for 1 year and all associated posts successfully banned.");
+            navigate('/../admin-search');
 		}
 		setShowBanUserModal(false);
 	};
@@ -284,10 +323,14 @@ export default function ViewItinerary() {
 						<Button color="error" onClick={handleBanUser}>
 							Ban Poster
 						</Button>
+                        <Button color="error" onClick={handleClearReports}>
+                            Clear Reports
+                        </Button>
 					</>
 				)}
 			</ButtonGroup>
-			Rating: __%
+            <span className={styles.postRating}>Rating: {postRating}%</span>
+			
 			<ButtonGroup>
 				<Button variant={myRating?.is_good ? "contained" : "outlined"} onClick={(e) => handleSubmit(e, true)}>
 					<ThumbUpIcon />
@@ -354,13 +397,29 @@ export default function ViewItinerary() {
 			) : (
 				<p>No itinerary found for this post_id.</p>
 			)}
-			{showBanPostModal && (
+			{showClearReportsModal && (
+				<div className={styles.modalOverlay}>
+					<div className={styles.modalContent}>
+						<h3>Confirm Clear Reports</h3>
+						<p>Are you sure you want to delete all reports for this itinerary?</p>
+						<div className={styles.modalButtons}>
+							<button component={Link} className={styles.confirmButton} onClick={confirmClearReports}>
+								Yes
+							</button>
+							<button className={styles.cancelButton} onClick={() => setShowClearReportsModal(false)}>
+								Cancel
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+            {showBanPostModal && (
 				<div className={styles.modalOverlay}>
 					<div className={styles.modalContent}>
 						<h3>Confirm Ban Post</h3>
 						<p>Are you sure you want to ban this itinerary?</p>
 						<div className={styles.modalButtons}>
-							<button className={styles.confirmButton} onClick={confirmBanPost}>
+							<button component={Link} className={styles.confirmButton} onClick={confirmBanPost}>
 								Yes
 							</button>
 							<button className={styles.cancelButton} onClick={() => setShowBanPostModal(false)}>

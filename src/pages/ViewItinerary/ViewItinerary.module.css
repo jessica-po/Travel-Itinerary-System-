@@ -6,6 +6,10 @@
 	padding: 20px;
 }
 
+.postRating {
+	margin-top: 15px;
+}
+
 .itineraryTable,
 .itineraryTable th,
 .itineraryTable td {
