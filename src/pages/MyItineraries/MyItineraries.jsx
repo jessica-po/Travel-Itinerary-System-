@@ -3,12 +3,14 @@ import { useNavigate, Link } from "react-router-dom";
 import styles from "./MyItineraries.module.css";
 import useSupabase from "../../context/SupabaseContext";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from "@mui/material";
 
 
 export default function MyItineraries() {
 	const [itineraries, setItineraries] = useState([]);
-	// const [userId, setUserId] = useState(null);
 	const { getUserItineraries, user, deleteItinerary } = useSupabase();
+  const [modalOpen, setModalOpen] = useState(false); // Modal visibility state
+  const [selectedItineraryId, setSelectedItineraryId] = useState(null); // ID of the itinerary to delete
 	const [filters, setFilters] = useState({
 		searchQuery: "",
 		minDuration: "",
@@ -19,22 +21,6 @@ export default function MyItineraries() {
 	});
 	const navigate = useNavigate();
 
-	// Fetch logged-in user and set userId
-	// useEffect(() => {
-	//   const fetchUser = async () => {
-	//     const { user, error } = await getLoggedInUser();
-	//     if (error || !user) {
-	//       console.error("Error fetching user:", error);
-	//       alert("Please log in to view your itineraries.");
-	//       navigate("/login");
-	//     } else {
-	//       setUserId(user.id); // Set the logged-in user's ID
-	//     }
-	//   };
-	//   fetchUser();
-	// }, [getLoggedInUser, navigate]);
-
-	// Load itineraries for the logged-in user
 	useEffect(() => {
 		if (!user.id) return; // Don't fetch itineraries until userId is set
 		const loadUserItineraries = async () => {
@@ -83,29 +69,17 @@ export default function MyItineraries() {
 		return <div>Loading...</div>;
 	};
 
-
-  const handleDeleteItinerary = async (postId, e) => {
+  const handleDeleteClick = (postId, e) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const itinerary = itineraries.find((itin) => itin.post_id === postId);
+    setSelectedItineraryId(postId); // Set the selected itinerary for deletion
+    setModalOpen(true); // Open the modal
+};
 
-    if (!itinerary) {
-        alert("Itinerary not found.");
-        return;
-    }
-
-    // Verify if the user is the owner of the itinerary
-    if (itinerary.user_id !== user.id) {
-        alert("You are not authorized to delete this itinerary.");
-        return;
-    }
-
-    const confirmed = window.confirm("Are you sure you want to delete this itinerary?");
-    if (!confirmed) return;
-
+const confirmDelete = async () => {
     try {
-        const { error } = await deleteItinerary(user.id, postId); // Call the deleteItinerary function from context
+        const postId = selectedItineraryId;
+        const { error } = await deleteItinerary(user.id, postId);
         if (!error) {
             setItineraries((prev) => prev.filter((itin) => itin.post_id !== postId));
             alert("Itinerary deleted successfully.");
@@ -116,7 +90,13 @@ export default function MyItineraries() {
     } catch (err) {
         console.error("Error deleting itinerary:", err);
         alert("An unexpected error occurred.");
+    } finally {
+        setModalOpen(false); // Close the modal after deletion
     }
+};
+
+const cancelDelete = () => {
+    setModalOpen(false); // Close the modal without deleting
 };
 
 
@@ -226,8 +206,8 @@ export default function MyItineraries() {
                     </div>
                   </div>
                   <DeleteIcon
-                    className={styles.deleteButton}
-                    onClick={(e) => handleDeleteItinerary(itinerary.post_id, e)}
+                      className={styles.deleteButton}
+                      onClick={(e) => handleDeleteClick(itinerary.post_id, e)}
                   />
                 </div>
               </Link>
@@ -235,6 +215,20 @@ export default function MyItineraries() {
           </div>
         </div>
       </div>
+      <Dialog open={modalOpen} onClose={cancelDelete}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+            <DialogContentText>Are you sure you want to delete this itinerary?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={cancelDelete}>
+                Cancel
+            </Button>
+            <Button onClick={confirmDelete} style={{backgroundColor: "#D11A2A", color: "white"}}>
+                Delete
+            </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
