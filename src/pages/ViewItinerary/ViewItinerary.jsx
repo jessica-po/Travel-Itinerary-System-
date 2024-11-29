@@ -17,7 +17,7 @@ export default function ViewItinerary() {
 		getRatings,
 		upsertRating,
 		insertReport,
-		insertRating,
+        deleteRating,
 		user,
 		userProfile,
 		clearReports,
@@ -29,7 +29,7 @@ export default function ViewItinerary() {
 	const [filteredEvents, setFilteredEvents] = useState([]);
 	const [itinerary, setItinerary] = useState({});
     const [postRating, setPostRating] = useState(0);
-	const [myRating, setMyRating] = useState([]);
+	const [myRating, setMyRating] = useState({});
 	const [showReportModal, setShowReportModal] = useState(false);
 	const [reportReason, setReportReason] = useState("");
 	// const [userId, setUserId] = useState(null);
@@ -129,7 +129,18 @@ export default function ViewItinerary() {
 			alert("You must be logged in to rate.");
 			return;
 		}
-
+        try {
+            if (myRating && myRateIsGood === myRating.is_good) {
+                await deleteRating(postId);
+                setMyRating({});
+                await loadPostRatings();
+                return;
+            }
+        } catch (error) {
+            alert(error);
+            console.error("Error deleting rating:", error);
+        }
+        
 		try {
 			const newRating = {
 				user_id: user.id,

@@ -307,6 +307,17 @@ export function SupabaseContextProvider({ children }) {
 	});
 
 	/**
+     * Deletes the rating of the user for a specific itinerary
+     * @param postId
+     * @returns error if any error occurred
+     */
+    const deleteRating = async (postId: string) => {
+        const { error } = await supabase.from("rating").delete().eq("post_id", postId).eq("user_id", userProfile.user_id);
+
+        return error;
+    };
+
+	/**
 	 * Deletes all the reports of the itinerary that is not problematic
 	 * @param postId ID of the itinerary to clear
 	 * @returns error if any error occurred
@@ -545,6 +556,7 @@ export function SupabaseContextProvider({ children }) {
 					insertItinerary,
 					insertRating,
 					upsertRating,
+					deleteRating,
 					clearReports,
 					banPost,
 					banUserId,
@@ -720,6 +732,7 @@ type SupabaseContextType = {
 		data: Database["public"]["Tables"]["rating"]["Update"] | null;
 		error: PostgrestError | null;
 	}>;
+	deleteRating: (post_id: string) => Promise<PostgrestError | null | undefined>;
 	clearReports: (post_id: string) => Promise<PostgrestError | null | undefined>;
 	banPost: (post_id: string) => Promise<PostgrestError | null | undefined>;
 	banUserId: any;
