@@ -19,40 +19,73 @@ export function SupabaseContextProvider({ children }) {
 	const [supabase, _] = useState(createClient<Database>(url, service_role_key || publicAnonKey));
 	const [user, setUser] = useState<User | null>(null);
 	const [userProfile, setUserProfile] = useState<Database["public"]["Tables"]["profile"]["Row"] | null>(null);
+	const [alertDisplayed, setAlertDisplayed] = useState(false);
 
 	useEffect(() => {
 		const fetchUser = async () => {
-			const { data: { user } } = await supabase.auth.getUser();
-			
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			console.log(user);
 			setUser(user);
 
 			if (user === null) {
 				setUserProfile(null);
+				logout();
 			} else {
 				const { data, error } = await getUserProfile(user.id);
-	
+
 				if (!error) {
 					setUserProfile(data);
 				}
 			}
 		};
 
-		fetchUser()
-			.catch(err => {
-				alert("Error reloading user");
-				console.error(err);
-			})
+		fetchUser().catch((err) => {
+			alert("Error reloading user");
+			console.error(err);
+		});
 	}, []);
+
+	const verifyNotBanned = async () => {
+		const { data, error } = await getUserProfile(user.id);
+		if (!error) {
+			setUserProfile(data);
+		}
+
+		if (userProfile?.profile_status === "banned") {
+			console.log(sessionStorage.getItem("banAlertDisplayed"));
+			if (!sessionStorage.getItem("banAlertDisplayed")) {
+				console.log("setting cookie");
+				sessionStorage.setItem("banAlertDisplayed", "true");
+			}
+			alert("Your account is banned");
+			await logout();
+			throw new Error("User is banned");
+		}
+	};
+
+	const withBanCheck = (fn) => {
+		return async (...args) => {
+			if (userProfile === null) {
+				console.log("User profile is not loaded yet. Cannot verify ban status.");
+				return fn(...args);
+			}
+			await verifyNotBanned();
+			return fn(...args);
+		};
+	};
 
 	const setLoggedIn = async (user: User | null) => {
 		setUser(user);
-
+		sessionStorage.removeItem("banAlertDisplayed");
 		if (user === null) {
 			setUserProfile(null);
 		} else {
 			const { data, error } = await getUserProfile(user.id);
 
 			if (!error) {
+				setAlertDisplayed(false);
 				setUserProfile(data);
 			}
 		}
@@ -96,6 +129,7 @@ export function SupabaseContextProvider({ children }) {
 	 * @returns all unbanned itineraries
 	 */
 	const getItineraries = async () => {
+		console.log("inGetItineraries");
 		const { data, error } = await supabase.from("itinerary").select().eq("itinerary_status", "normal");
 
 		return { data, error };
@@ -116,11 +150,11 @@ export function SupabaseContextProvider({ children }) {
 	 * @param events event or array of events to insert
 	 * @returns
 	 */
-	const insertEvents = async (events) => {
+	const insertEvents = withBanCheck(async (events) => {
 		const { data, error } = await supabase.from("event").insert(events);
 
 		return { data, error };
-	};
+	});
 
 	/**
 	 *
@@ -157,18 +191,18 @@ export function SupabaseContextProvider({ children }) {
 	 * @param userId of a user
 	 * @returns list of all itineraries posted by them
 	 */
-	const getUserItineraries = async (userId) => {
+	const getUserItineraries = withBanCheck(async (userId) => {
 		const { data, error } = await supabase.from("itinerary").select().eq("user_id", userId);
 
 		return { data, error };
-	};
+	});
 
 	/**
 	 *
 	 * @param user_id ID of the user
 	 * @returns list of all saved itineraries for the user with full details
 	 */
-	const getSavedItineraries = async (user_id: string) => {
+	const getSavedItineraries = withBanCheck(async (user_id: string) => {
 		const { data, error } = await supabase
 			.from("saved")
 			.select(
@@ -195,7 +229,7 @@ export function SupabaseContextProvider({ children }) {
 		const savedItineraries = data?.map((saved) => saved?.itinerary).filter((itinerary) => itinerary !== null) || null;
 
 		return { data: savedItineraries, error };
-	};
+	});
 
 	/**
 	 *
@@ -203,13 +237,13 @@ export function SupabaseContextProvider({ children }) {
 	 * @param post_id ID of the itinerary to save
 	 * @returns result of upserting the saved itinerary
 	 */
-	const saveItinerary = async (user_id: string, post_id: string) => {
+	const saveItinerary = withBanCheck(async (user_id: string, post_id: string) => {
 		const { data, error } = await supabase
 			.from("saved")
 			.upsert({ user_id, post_id }, { onConflict: "user_id, post_id" });
 
 		return { data, error };
-	};
+	});
 
 	/**
 	 *
@@ -241,28 +275,28 @@ export function SupabaseContextProvider({ children }) {
 	 * @param newItinerary new itinerary details
 	 * @returns post_id to newly created itinerary
 	 */
-	const insertItinerary = async (newItinerary) => {
+	const insertItinerary = withBanCheck(async (newItinerary) => {
 		const { data, error } = await supabase.from("itinerary").insert(newItinerary).select("post_id").limit(1).single();
 		return { data, error };
-	};
+	});
 
 	/**
 	 *
 	 * @param newRating new rating to submit
 	 * @returns details of the newly created rating
 	 */
-	const insertRating = async (newRating) => {
+	const insertRating = withBanCheck(async (newRating) => {
 		const { data, error } = await supabase.from("rating").insert(newRating).select().limit(1).single();
 		//.single();
 		return { data, error };
-	};
+	});
 
 	/**
 	 *
 	 * @param newRating rating to upsert
 	 * @returns details of the newly upserted rating
 	 */
-	const upsertRating = async (newRating) => {
+	const upsertRating = withBanCheck(async (newRating) => {
 		const { data, error } = await supabase
 			.from("rating")
 			.upsert(newRating, { onConflict: "user_id, post_id" })
@@ -270,21 +304,20 @@ export function SupabaseContextProvider({ children }) {
 			.limit(1)
 			.single();
 		return { data, error };
-	};
+	});
 
 	/**
-     * Deletes all the reports of the itinerary that is not problematic
-     * @param postId ID of the itinerary to clear
-     * @returns error if any error occurred
-     */
-    const clearReports = async (postId: string) => {
-        if (userProfile?.role === "admin") {
-            const { error } = await supabase.from("report").delete().eq("post_id", postId);
+	 * Deletes all the reports of the itinerary that is not problematic
+	 * @param postId ID of the itinerary to clear
+	 * @returns error if any error occurred
+	 */
+	const clearReports = async (postId: string) => {
+		if (userProfile?.role === "admin") {
+			const { error } = await supabase.from("report").delete().eq("post_id", postId);
 
-
-            return error;
-        }
-    };
+			return error;
+		}
+	};
 
 	/**
 	 *
@@ -332,12 +365,27 @@ export function SupabaseContextProvider({ children }) {
 	 * @param userId ID of the user to unban
 	 * @returns an object with unbanUserAuth, unbanUser, and unbanUserPosts async functions
 	 */
-	const unbanUserId = (userId: string) => {
+	// const unbanUserId = (userId: string) => {
+	// 	if (userProfile?.role === "admin") {
+	// 		return {
+	// 			unbanUserAuth: supabase.auth.admin.updateUserById(userId, { ban_duration: undefined }),
+	// 			unbanUser: supabase.from("profile").update({ profile_status: "normal" }).eq("user_id", userId),
+	// 			unbanUserPosts: supabase.from("itinerary").update({ itinerary_status: "normal" }).eq("user_id", userId),
+	// 		};
+	// 	}
+	// };
+
+	/**
+	 * Unbans a specific user and all their posts
+	 * @param userId ID of the user to unban
+	 * @returns an object with unbanUserAuth, unbanUser, and unbanUserPosts async functions
+	 */
+	const unbanUserId = (user_id: string) => {
 		if (userProfile?.role === "admin") {
 			return {
-				unbanUserAuth: supabase.auth.admin.updateUserById(userId, { ban_duration: "0h" }),
-				unbanUser: supabase.from("profile").update({ profile_status: "normal" }).eq("user_id", userId),
-				unbanUserPosts: supabase.from("itinerary").update({ itinerary_status: "normal" }).eq("user_id", userId),
+				unbanUserAuth: supabase.auth.admin.updateUserById(user_id, { ban_duration: "0h" }),
+				unbanUser: supabase.from("profile").update({ profile_status: "normal" }).eq("user_id", user_id),
+				unbanUserPosts: supabase.from("itinerary").update({ itinerary_status: "normal" }).eq("user_id", user_id),
 			};
 		}
 	};
@@ -439,44 +487,40 @@ export function SupabaseContextProvider({ children }) {
 	 * @param report The report details including post ID, user ID, and the reason for the report.
 	 * @returns An object containing an error if an error occurred, or null otherwise.
 	 */
-	const insertReport = async ({ post_id, user_id, reason }) => {
+	const insertReport = withBanCheck(async ({ post_id, user_id, reason }) => {
 		const { error } = await supabase.from("report").insert({
 			post_id,
 			user_id,
 			reason,
 		});
 		return { error };
-	};
+	});
 
 	// Fetch all comments for a given itinerary (post_id)
-const getComments = async (postId) => {
-    const { data, error } = await supabase
-        .from("comments")
-        .select("*")
-        .eq("post_id", postId)
-        .order("created_at", { ascending: false });
+	const getComments = async (postId) => {
+		const { data, error } = await supabase
+			.from("comments")
+			.select("*")
+			.eq("post_id", postId)
+			.order("created_at", { ascending: false });
 
-    return { data, error };
-};
+		return { data, error };
+	};
 
-const addComment = async ({ post_id, user_id, comment, first_name, last_name }) => {
-    const { data, error } = await supabase
-        .from("comments")
-        .insert({ post_id, user_id, comment, first_name, last_name })
-        .select("*"); // Ensures the inserted row is returned
+	const addComment = withBanCheck(async ({ post_id, user_id, comment, first_name, last_name }) => {
+		const { data, error } = await supabase
+			.from("comments")
+			.insert({ post_id, user_id, comment, first_name, last_name })
+			.select("*"); // Ensures the inserted row is returned
 
-    return { data, error };
-};
+		return { data, error };
+	});
 
-const deleteComment = async (commentId) => {
-    const { error } = await supabase
-        .from("comments")
-        .delete()
-        .eq("comment_id", commentId); // Use comment_id to target the specific comment
+	const deleteComment = withBanCheck(async (commentId) => {
+		const { error } = await supabase.from("comments").delete().eq("comment_id", commentId); // Use comment_id to target the specific comment
 
-    return { error };
-};
-
+		return { error };
+	});
 
 	return (
 		<>
@@ -512,8 +556,8 @@ const deleteComment = async (commentId) => {
 					deleteReport,
 					deleteItinerary,
 					insertReport,
-					addComment, 
-					getComments, 
+					addComment,
+					getComments,
 					deleteComment,
 				}}
 			>

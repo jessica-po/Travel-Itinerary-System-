@@ -213,17 +213,39 @@ export default function AdminSearch() {
 		loadItineraries();
 	};
 
+	// const confirmUnbanUser = async () => {
+	// 	try {
+	// 		const error = await unbanUserId(selectedItinerary);
+	// 		if (error) {
+	// 			console.error("Error unbanning user:", error.message);
+	// 			alert("Failed to unban user. Please try again.");
+	// 		} else {
+	// 			alert("User unbanned successfully!");
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Error unbanning user:", error);
+	// 		alert("Failed to unban user. Please try again.");
+	// 	}
+	// 	setShowUnbanUserModal(false);
+	// 	setSelectedItinerary(null);
+	// 	loadItineraries();
+	// };
 	const confirmUnbanUser = async () => {
+		console.log(`unbanning user with userId: ${selectedItinerary}`);
+		const { unbanUserAuth, unbanUser, unbanUserPosts } = unbanUserId(selectedItinerary);
 		try {
-			const error = await unbanUserId(selectedItinerary);
-			if (error) {
-				console.error("Error unbanning user:", error.message);
-				alert("Failed to unban user. Please try again.");
-			} else {
-				alert("User unbanned successfully!");
+			await unbanUserAuth;
+			const { error: profileError } = await unbanUser;
+			const { error: postsError } = await unbanUserPosts;
+
+			if (profileError || postsError) {
+				throw new Error("Failed to ban user or their posts");
 			}
+
+			alert("User and their posts unbanned successfully!");
+			setItineraries((prev) => prev.filter((itinerary) => itinerary.user_id !== selectedItinerary));
 		} catch (error) {
-			console.error("Error unbanning user:", error);
+			console.error("Error unbanning user:", error.message);
 			alert("Failed to unban user. Please try again.");
 		}
 		setShowUnbanUserModal(false);
