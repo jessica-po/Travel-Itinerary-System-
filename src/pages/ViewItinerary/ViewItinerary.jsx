@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import styles from "./ViewItinerary.module.css";
 import { Button, ButtonGroup } from "@mui/material";
@@ -12,6 +12,7 @@ export default function ViewItinerary() {
 	const [events, setEvents] = useState([]);
 	const {
 		getItineraries,
+		getPostRatings,
 		getEvents,
 		getRatings,
 		upsertRating,
@@ -19,6 +20,7 @@ export default function ViewItinerary() {
 		insertRating,
 		user,
 		userProfile,
+		clearReports,
 		banPost,
 		banUserId,
 		saveItinerary,
@@ -34,12 +36,16 @@ export default function ViewItinerary() {
 	const [googleCalendarUrl, setGoogleCalendarUrl] = useState("https://calendar.google.com/calendar/u/0/r/eventedit");
 	const [showBanPostModal, setShowBanPostModal] = useState(false);
 	const [showBanUserModal, setShowBanUserModal] = useState(false);
+	const [showClearReportsModal, setShowClearReportsModal] = useState(false);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		document.title = "View Itinerary - Travel Itineraries";
 		if (postId) {
 			loadEvents();
 			loadItineraries();
+			loadPostRatings();
+
 			if (user) {
 				if (user.id) loadMyRating();
 			}
@@ -83,10 +89,28 @@ export default function ViewItinerary() {
 		}
 	};
 
+	const loadPostRatings = async () => {
+		const { data, error } = await getPostRatings();
+		if (!error) {
+			const matchedGoodPostRating = data.find((post) => post.post_id === postId && post.is_good === true) || {
+				total: 0,
+			};
+			const matchedBadPostRating = data.find((post) => post.post_id === postId && post.is_good === false) || {
+				total: 0,
+			};
+			const total = matchedGoodPostRating.total + matchedBadPostRating.total;
+
+			const calcPostRating = total === 0 ? 0 : Math.round((100 * matchedGoodPostRating.total) / total);
+			setPostRating(calcPostRating);
+		} else {
+			console.error("Error fetching postRating:", error);
+		}
+	};
+
 	const loadMyRating = async () => {
 		const { data, error } = await getRatings();
 		if (!error) {
-			const matchedRating = data.find((rating) => rating.user_id === user.id);
+			const matchedRating = data.find((rating) => rating.user_id === user.id && rating.post_id === postId);
 			setMyRating(matchedRating);
 		} else {
 			console.error("Error fetching myRating:", error);
@@ -105,8 +129,6 @@ export default function ViewItinerary() {
 			return;
 		}
 
-		setMyRating({ ...myRating, is_good: myRateIsGood });
-
 		try {
 			const newRating = {
 				user_id: user.id,
@@ -119,17 +141,12 @@ export default function ViewItinerary() {
 				console.error("Error inserting rating:", ratingError);
 				return;
 			}
-
-			return;
+			setMyRating({ ...myRating, is_good: myRateIsGood });
+			await loadPostRatings();
 		} catch (err) {
 			alert(err);
 		}
 
-		if (ratingError) {
-			console.error("Failed to rate itinerary:", ratingError);
-			alert("Failed to rate itinerary. Please try again.");
-			return;
-		}
 		console.log("Rating inserted:", ratingData);
 	};
 
@@ -165,6 +182,23 @@ export default function ViewItinerary() {
 		setShowBanUserModal(true);
 	};
 
+	const handleClearReports = () => {
+		setShowClearReportsModal(true);
+	};
+
+	const confirmClearReports = async () => {
+		const error = await clearReports(itinerary.post_id);
+
+		if (error) {
+			alert(error.message);
+			console.error(error);
+		} else {
+			alert("Reports have been cleared.");
+			//navigate('/../admin-search');
+		}
+		setShowClearReportsModal(false);
+	};
+
 	const confirmBanPost = async () => {
 		const error = await banPost(itinerary.post_id);
 
@@ -173,6 +207,7 @@ export default function ViewItinerary() {
 			console.error(error);
 		} else {
 			alert("Itinerary has been banned.");
+			navigate("/../admin-search");
 		}
 		setShowBanPostModal(false);
 	};
@@ -189,6 +224,7 @@ export default function ViewItinerary() {
 			if (response[2].error) console.error(response[2].error);
 		} else {
 			alert("User banned for 1 year and all associated posts successfully banned.");
+			navigate("/../admin-search");
 		}
 		setShowBanUserModal(false);
 	};

@@ -8,7 +8,7 @@ import useSupabase from "../../context/SupabaseContext";
 export default function AdminSearch() {
 	const [itineraries, setItineraries] = useState([]);
 	const [ratings, setRatings] = useState([]);
-	const { getAllItineraries, getPostRatings, getReports, banPost, banUserId, unbanPost, unbanUserId, getUserProfiles } =
+	const { getAllItineraries, getPostRatings, getReports, clearReports, banPost, banUserId, unbanPost, unbanUserId, getUserProfiles } =
 		useSupabase();
 	const [reports, setReports] = useState([]);
 	const [filters, setFilters] = useState({
@@ -23,6 +23,7 @@ export default function AdminSearch() {
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [showBanModal, setShowBanModal] = useState(false);
 	const [selectedItinerary, setSelectedItinerary] = useState(null);
+	const [showClearReportsModal, setShowClearReportsModal] = useState(false);
 	const [showUnbanUserModal, setShowUnbanUserModal] = useState(false);
 	const [showUnbanPostModal, setShowUnbanPostModal] = useState(false);
 
@@ -140,9 +141,29 @@ export default function AdminSearch() {
 		setShowUnbanUserModal(true);
 	};
 
+	const handleClearReports = (postId) => {
+		setSelectedItinerary(postId);
+		setShowClearReportsModal(true);
+	};
+
 	const handleUnbanPost = (postId) => {
 		setSelectedItinerary(postId);
 		setShowUnbanPostModal(true);
+	};
+
+	const confirmClearReports = async () => {
+		console.log(`Deleting Reports with postId: ${selectedItinerary}`);
+		const error = await clearReports(selectedItinerary);
+		if (error) {
+			console.error("Error clearing reports: ", error.message);
+			alert("Failed to delete reports. Please try again.");
+		} else {
+			alert("Reports deleted successfully!");
+			setItineraries((prev) => prev.filter((itinerary) => itinerary.post_id !== selectedItinerary));
+		}
+		setShowClearReportsModal(false);
+		setSelectedItinerary(null);
+		loadItineraries();
 	};
 
 	const confirmDeleteItinerary = async () => {
@@ -359,14 +380,33 @@ export default function AdminSearch() {
 											Ban User
 										</button>
 									)}
-									<Link to={`/view-reports/${itinerary.post_id}`} className={styles.buttonLink}>
-										<button className={styles.adminButton}>View Reports</button>
-									</Link>
+									<button className={styles.adminButton} onClick={() => handleViewReports(itinerary.post_id)}>
+										View Reports
+									</button>
+									<button className={styles.adminButton} onClick={() => handleClearReports(itinerary.post_id)}>
+										Clear Reports
+									</button>
 								</div>
 							</div>
 						))}
 					</div>
 				</div>
+				{showClearReportsModal && (
+					<div className={styles.modalOverlay}>
+						<div className={styles.modalContent}>
+							<h3>Confirm Clear Reports</h3>
+							<p>Are you sure you want to delete all reports for this itinerary?</p>
+							<div className={styles.modalButtons}>
+								<button component={Link} className={styles.confirmButton} onClick={confirmClearReports}>
+									Yes
+								</button>
+								<button className={styles.cancelButton} onClick={() => setShowClearReportsModal(false)}>
+									Cancel
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
 				{showDeleteModal && (
 					<div className={styles.modalOverlay}>
 						<div className={styles.modalContent}>
