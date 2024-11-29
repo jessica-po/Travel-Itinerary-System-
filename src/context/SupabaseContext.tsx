@@ -7,7 +7,7 @@ import {
 	User,
 	WeakPassword,
 } from "@supabase/supabase-js";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { publicAnonKey, url } from "../../supabase.token";
 import { service_role_key } from "../../supabase.admin.token";
 import { Database } from "../../database.types";
@@ -19,6 +19,30 @@ export function SupabaseContextProvider({ children }) {
 	const [supabase, _] = useState(createClient<Database>(url, service_role_key || publicAnonKey));
 	const [user, setUser] = useState<User | null>(null);
 	const [userProfile, setUserProfile] = useState<Database["public"]["Tables"]["profile"]["Row"] | null>(null);
+
+	useEffect(() => {
+		const fetchUser = async () => {
+			const { data: { user } } = await supabase.auth.getUser();
+			
+			setUser(user);
+
+			if (user === null) {
+				setUserProfile(null);
+			} else {
+				const { data, error } = await getUserProfile(user.id);
+	
+				if (!error) {
+					setUserProfile(data);
+				}
+			}
+		};
+
+		fetchUser()
+			.catch(err => {
+				alert("Error reloading user");
+				console.error(err);
+			})
+	}, []);
 
 	const setLoggedIn = async (user: User | null) => {
 		setUser(user);
