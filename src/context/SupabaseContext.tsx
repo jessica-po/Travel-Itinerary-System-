@@ -171,11 +171,13 @@ export function SupabaseContextProvider({ children }) {
 	 *
 	 * @returns total ratings for a specific post
 	 */
-	const getPostRatings = async () => {
-		const { data, error } = await supabase.from("post_ratings").select();
+    const getPostRatings = async () => {
+        const { data, error } = await supabase
+            .from('post_ratings')
+            .select();
 
-		return { data, error };
-	};
+        return { data, error };
+    };
 
 	/**
 	 *
