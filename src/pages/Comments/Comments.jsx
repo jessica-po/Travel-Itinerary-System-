@@ -101,7 +101,7 @@ export default function Comments() {
                                 <span>
                                     {comment.first_name} {comment.last_name}
                                 </span>
-                                {comment.user_id === user.id && (
+                                {comment.user_id === user?.id && (
                                     <button
                                         className={styles.deleteButton}
                                         onClick={() => openDeleteModal(comment.comment_id)} 
