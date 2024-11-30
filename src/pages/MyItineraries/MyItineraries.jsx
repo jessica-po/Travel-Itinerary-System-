@@ -2,95 +2,105 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import styles from "./MyItineraries.module.css";
 import useSupabase from "../../context/SupabaseContext";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from "@mui/material";
+
 
 export default function MyItineraries() {
-  const [itineraries, setItineraries] = useState([]);
-  // const [userId, setUserId] = useState(null);
-  const { getUserItineraries, user } = useSupabase();
-  const [filters, setFilters] = useState({
-    searchQuery: "",
-    minDuration: "",
-    maxDuration: "",
-    minPrice: "",
-    maxPrice: "",
-    familyFriendly: false,
-  });
-  const navigate = useNavigate();
+	const [itineraries, setItineraries] = useState([]);
+	const { getUserItineraries, user, deleteItinerary } = useSupabase();
+  const [modalOpen, setModalOpen] = useState(false); // Modal visibility state
+  const [selectedItineraryId, setSelectedItineraryId] = useState(null); // ID of the itinerary to delete
+	const [filters, setFilters] = useState({
+		searchQuery: "",
+		minDuration: "",
+		maxDuration: "",
+		minPrice: "",
+		maxPrice: "",
+		familyFriendly: false,
+	});
+	const navigate = useNavigate();
 
-  // Fetch logged-in user and set userId
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     const { user, error } = await getLoggedInUser();
-  //     if (error || !user) {
-  //       console.error("Error fetching user:", error);
-  //       alert("Please log in to view your itineraries.");
-  //       navigate("/login");
-  //     } else {
-  //       setUserId(user.id); // Set the logged-in user's ID
-  //     }
-  //   };
-  //   fetchUser();
-  // }, [getLoggedInUser, navigate]);
+	useEffect(() => {
+		if (!user.id) return; // Don't fetch itineraries until userId is set
+		const loadUserItineraries = async () => {
+			const { data, error } = await getUserItineraries(user.id);
+			if (!error) {
+				setItineraries(data); // Set the itineraries for the user
+			} else {
+				console.error("Failed to fetch user itineraries:", error);
+			}
+		};
+		loadUserItineraries();
+	}, [user, getUserItineraries]);
 
-  // Load itineraries for the logged-in user
-  useEffect(() => {
-    if (!user.id) return; // Don't fetch itineraries until userId is set
-    const loadUserItineraries = async () => {
-      const { data, error } = await getUserItineraries(user.id);
-      if (!error) {
-        setItineraries(data); // Set the itineraries for the user
-      } else {
-        console.error("Failed to fetch user itineraries:", error);
-      }
-    };
-    loadUserItineraries();
-  }, [user, getUserItineraries]);
 
-  // Function to handle navigation to the form page
-  const handleCreateItinerary = () => {
-    navigate("/create-itinerary");
-  };
 
-  const handleFilterChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFilters((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
+	// Function to handle navigation to the form page
+	const handleCreateItinerary = () => {
+		navigate("/create-itinerary");
+	};
 
-  const filteredItineraries = itineraries.filter((itinerary) => {
-    const matchesSearch =
-      itinerary.post_name
-        ?.toLowerCase()
-        .includes(filters.searchQuery.toLowerCase()) ||
-      itinerary.destination
-        ?.toLowerCase()
-        .includes(filters.searchQuery.toLowerCase()) ||
-      itinerary.description
-        ?.toLowerCase()
-        .includes(filters.searchQuery.toLowerCase());
-    const matchesDuration =
-      (!filters.minDuration ||
-        itinerary.duration >= parseInt(filters.minDuration)) &&
-      (!filters.maxDuration ||
-        itinerary.duration <= parseInt(filters.maxDuration));
-    const matchesPrice =
-      (!filters.minPrice ||
-        itinerary.price_high >= parseFloat(filters.minPrice)) &&
-      (!filters.maxPrice ||
-        itinerary.price_low <= parseFloat(filters.maxPrice));
-    const matchesFamily =
-      !filters.familyFriendly || itinerary.is_family_friendly;
-    return matchesSearch && matchesDuration && matchesPrice && matchesFamily;
-  });
+	const handleFilterChange = (e) => {
+		const { name, value, type, checked } = e.target;
+		setFilters((prev) => ({
+			...prev,
+			[name]: type === "checkbox" ? checked : value,
+		}));
+	};
 
-  // Render based on user status
-  if (user.id === null) {
-    return <div>Loading...</div>;
-  }
+	const filteredItineraries = itineraries.filter((itinerary) => {
+		const matchesSearch =
+			itinerary.post_name?.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+			itinerary.destination?.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+			itinerary.description?.toLowerCase().includes(filters.searchQuery.toLowerCase());
+		const matchesDuration =
+			(!filters.minDuration || itinerary.duration >= parseInt(filters.minDuration)) &&
+			(!filters.maxDuration || itinerary.duration <= parseInt(filters.maxDuration));
+		const matchesPrice =
+			(!filters.minPrice || itinerary.price_high >= parseFloat(filters.minPrice)) &&
+			(!filters.maxPrice || itinerary.price_low <= parseFloat(filters.maxPrice));
+		const matchesFamily = !filters.familyFriendly || itinerary.is_family_friendly;
+		return matchesSearch && matchesDuration && matchesPrice && matchesFamily;
+	});
 
-  return (
+	// Render based on user status
+	if (user.id === null) {
+		return <div>Loading...</div>;
+	};
+
+  const handleDeleteClick = (postId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedItineraryId(postId); // Set the selected itinerary for deletion
+    setModalOpen(true); // Open the modal
+};
+
+const confirmDelete = async () => {
+    try {
+        const postId = selectedItineraryId;
+        const { error } = await deleteItinerary(user.id, postId);
+        if (!error) {
+            setItineraries((prev) => prev.filter((itin) => itin.post_id !== postId));
+            alert("Itinerary deleted successfully.");
+        } else {
+            console.error("Failed to delete itinerary:", error);
+            alert("Failed to delete itinerary.");
+        }
+    } catch (err) {
+        console.error("Error deleting itinerary:", err);
+        alert("An unexpected error occurred.");
+    } finally {
+        setModalOpen(false); // Close the modal after deletion
+    }
+};
+
+const cancelDelete = () => {
+    setModalOpen(false); // Close the modal without deleting
+};
+
+
+	return (
     <div className="my-itineraries">
       <h2>My Itineraries (Page)</h2>
       <div className={styles.topBar}>
@@ -178,7 +188,9 @@ export default function MyItineraries() {
                       {itinerary.destination}
                     </div>
                     <div className={styles.description}>
-                      {itinerary.description}
+                      {itinerary.description?.length > 200
+                        ? `${itinerary.description.substring(0, 200)}...`
+                        : itinerary.description}
                     </div>
                     <div className={styles.details}>
                       <span>Duration: {itinerary.duration} days</span>
@@ -193,12 +205,30 @@ export default function MyItineraries() {
                       </span>
                     </div>
                   </div>
+                  <DeleteIcon
+                      className={styles.deleteButton}
+                      onClick={(e) => handleDeleteClick(itinerary.post_id, e)}
+                  />
                 </div>
               </Link>
             ))}
           </div>
         </div>
       </div>
+      <Dialog open={modalOpen} onClose={cancelDelete}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+            <DialogContentText>Are you sure you want to delete this itinerary?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={cancelDelete}>
+                Cancel
+            </Button>
+            <Button onClick={confirmDelete} style={{backgroundColor: "#D11A2A", color: "white"}}>
+                Delete
+            </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

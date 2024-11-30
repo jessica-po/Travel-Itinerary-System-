@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import styles from "./SearchItinerary.module.css";
 import { Link } from "react-router-dom"; // Import Link
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import useSupabase from "../../context/SupabaseContext";
 
 export default function SearchItinerary() {
-	const [ itineraries, setItineraries ] = useState([]);
-	const [ ratings, setRatings ] = useState([]);
+	const [itineraries, setItineraries] = useState([]);
+	const [ratings, setRatings] = useState([]);
 	const { getItineraries, getPostRatings } = useSupabase();
 	const [filters, setFilters] = useState({
 		searchQuery: "",
@@ -18,57 +18,56 @@ export default function SearchItinerary() {
 	});
 
 	useEffect(() => {
-		document.title = "Admin Search - Travel Itineraries";
+		document.title = "Search - Travel Itineraries";
 		loadItineraries();
 	}, []);
 
 	useEffect(() => {
-        updateItineraryRatings();
-    }, [ratings]);
+		updateItineraryRatings();
+	}, [ratings]);
 
 	const loadItineraries = async () => {
-        const { data, error } = await getItineraries();
-        if (!error) {
-            setItineraries(data);
-            loadRatings();
-        } else {
-            alert("Error loading itineraries. Check the console for more details.")
-            console.log(error);
-        }
-    };
+		const { data, error } = await getItineraries();
+		if (!error) {
+			setItineraries(data);
+			loadRatings();
+		} else {
+			alert("Error loading itineraries. Check the console for more details.");
+			console.log(error);
+		}
+	};
 
 	const loadRatings = async () => {
-        const { data, error } = await getPostRatings();
-        if (!error) {
-            setRatings(data);
-        } else {
-            alert("Error loading post ratings. Check the console for more details.")
-            console.log(error);
-        }
-    }
+		const { data, error } = await getPostRatings();
+		if (!error) {
+			setRatings(data);
+		} else {
+			alert("Error loading post ratings. Check the console for more details.");
+			console.log(error);
+		}
+	};
 
-    const addItineraryRatings = () => {
-        return itineraries.map(itinerary => ({
-            ...itinerary,
-            good_count: ratings.find(r => r.post_id === itinerary.post_id && r.is_good)?.total || 0,
-            bad_count: ratings.find(r => r.post_id === itinerary.post_id && !r.is_good)?.total || 0
-        }))
-    };
+	const addItineraryRatings = () => {
+		return itineraries.map((itinerary) => ({
+			...itinerary,
+			good_count: ratings.find((r) => r.post_id === itinerary.post_id && r.is_good)?.total || 0,
+			bad_count: ratings.find((r) => r.post_id === itinerary.post_id && !r.is_good)?.total || 0,
+		}));
+	};
 
-    const updateItineraryRatings = () => {
-        setItineraries(
-            addItineraryRatings()
-            .sort((a, b) => {
-                let a_rating = a.good_count / (a.good_count + a.bad_count);
-                let b_rating = b.good_count / (b.good_count + b.bad_count);
-                if (isNaN(a_rating) && isNaN(b_rating)) return 0;
-                if (isNaN(a_rating)) return 1;
-                if (isNaN(b_rating)) return -1;
-                
-                return b_rating - a_rating;
-            })
-        );
-    }
+	const updateItineraryRatings = () => {
+		setItineraries(
+			addItineraryRatings().sort((a, b) => {
+				let a_rating = a.good_count / (a.good_count + a.bad_count);
+				let b_rating = b.good_count / (b.good_count + b.bad_count);
+				if (isNaN(a_rating) && isNaN(b_rating)) return 0;
+				if (isNaN(a_rating)) return 1;
+				if (isNaN(b_rating)) return -1;
+
+				return b_rating - a_rating;
+			})
+		);
+	};
 
 	const handleFilterChange = (e) => {
 		const { name, value, type, checked } = e.target;
@@ -79,6 +78,7 @@ export default function SearchItinerary() {
 	};
 
 	const filteredItineraries = itineraries.filter((itinerary) => {
+		const matchesStatus = itinerary.itinerary_status !== "banned";
 		const matchesSearch =
 			itinerary.post_name?.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
 			itinerary.destination?.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
@@ -90,7 +90,7 @@ export default function SearchItinerary() {
 			(!filters.minPrice || itinerary.price_high >= parseFloat(filters.minPrice)) &&
 			(!filters.maxPrice || itinerary.price_low <= parseFloat(filters.maxPrice));
 		const matchesFamily = !filters.familyFriendly || itinerary.is_family_friendly;
-		return matchesSearch && matchesDuration && matchesPrice && matchesFamily;
+		return matchesSearch && matchesDuration && matchesPrice && matchesFamily && matchesStatus;
 	});
 
 	return (
@@ -141,13 +141,17 @@ export default function SearchItinerary() {
 				<div className={styles.itineraryContent}>
 					<div className={styles.itineraryList}>
 						{filteredItineraries.map((itinerary) => (
-							<Link to={`/view-itinerary/${itinerary.post_id}`}>
+							<Link key={itinerary.post_id} to={`/view-itinerary/${itinerary.post_id}`}>
 								<div key={itinerary.post_id} className={styles.itineraryCard}>
 									<img src={itinerary.image_url} alt={itinerary.post_name} className={styles.itineraryImage} />
 									<div className={styles.itineraryInfo}>
 										<h3>{itinerary.post_name}</h3>
 										<div className={styles.destination}>{itinerary.destination}</div>
-										<div className={styles.description}>{itinerary.description}</div>
+										<div className={styles.description}>
+											{itinerary.description?.length > 200
+												? `${itinerary.description.substring(0, 200)}...`
+												: itinerary.description}
+										</div>
 										<div className={styles.details}>
 											<span>Duration: {itinerary.duration} days</span>
 											<span>
@@ -157,18 +161,21 @@ export default function SearchItinerary() {
 										</div>
 
 										<td>
-												{ itinerary.good_count + itinerary.bad_count > 0 ? <div className={styles.ratingContainer}>
+											{itinerary.good_count + itinerary.bad_count > 0 ? (
+												<div className={styles.ratingContainer}>
 													<ThumbUpIcon className={styles.ratingIcon} />
 													<span className={styles.rating}>
-														{Math.round(itinerary.good_count / (itinerary.good_count + itinerary.bad_count) * 100)}%
+														{Math.round((itinerary.good_count / (itinerary.good_count + itinerary.bad_count)) * 100)}%
 													</span>
 													<span className={styles.ratingCount}>
-														{itinerary.good_count + itinerary.bad_count} rating{itinerary.good_count + itinerary.bad_count !== 1 && "s"}
+														{itinerary.good_count + itinerary.bad_count} rating
+														{itinerary.good_count + itinerary.bad_count !== 1 && "s"}
 													</span>
-												</div> : <>
-													No Ratings
-												</>}
-											</td>
+												</div>
+											) : (
+												<>No Ratings</>
+											)}
+										</td>
 									</div>
 								</div>
 							</Link>

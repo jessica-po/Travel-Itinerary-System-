@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './Register.module.css';
 import useSupabase from "../../context/SupabaseContext";
 
 export default function Register() {
-
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         firstName: '',
@@ -25,8 +23,8 @@ export default function Register() {
     useEffect(() => {
         if (user) {
             navigate('/', { 
-                replace: true, // replace the current page in history
-                state: { message: 'Login successful!' } // optional state to pass
+                replace: true, 
+                state: { message: 'Login successful!' } 
             });
         }
     }, [user]);
@@ -36,7 +34,6 @@ export default function Register() {
         setError('');
         setLoading(true);
 
-        /* Make sure all fields are entered */
         if (!formData.email || !formData.password || !formData.confirmPassword || !formData.firstName || !formData.lastName) {
             setError('All Fields Are Required');
             setLoading(false);
@@ -72,84 +69,81 @@ export default function Register() {
         }
     };
 
-
-
     return (
         <div className={styles.register}>
-            <h2>Register</h2>
-            <form onSubmit={handleSubmit} className={styles.form}>
-                <div className={styles.formGroup}>
-                    <input
-                        type="text"
-                        name="firstName"
-                        placeholder="First Name"
-                        value={formData.firstName}
-                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                        className={styles.input}
-                    />
-                </div>
+            <div className={styles.card}>
+                <h2 className={styles.title}>Register</h2>
+                <form onSubmit={handleSubmit} className={styles.form}>
+                    <div className={styles.formGroup}>
+                        <input
+                            type="text"
+                            name="firstName"
+                            placeholder="First Name"
+                            value={formData.firstName}
+                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                            className={styles.input}
+                        />
+                    </div>
 
-                <div className={styles.formGroup}>
-                    <input
-                        type="text"
-                        name="lastName"
-                        placeholder="Last Name"
-                        value={formData.lastName}
-                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                        className={styles.input}
-                    />
-                </div>
+                    <div className={styles.formGroup}>
+                        <input
+                            type="text"
+                            name="lastName"
+                            placeholder="Last Name"
+                            value={formData.lastName}
+                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                            className={styles.input}
+                        />
+                    </div>
 
-                <div className={styles.formGroup}>
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className={styles.input}
-                    />
-                </div>
+                    <div className={styles.formGroup}>
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            className={styles.input}
+                        />
+                    </div>
 
-                <div className={styles.formGroup}>
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="Password"
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className={styles.input}
-                    />
-                </div>
+                    <div className={styles.formGroup}>
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Password"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            className={styles.input}
+                        />
+                    </div>
 
-                <div className={styles.formGroup}>
-                    <input
-                        type="password"
-                        name="confirmPassword"
-                        placeholder="Confirm Password"
-                        value={formData.confirmPassword}
-                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                        className={styles.input}
-                    />
-                </div>
+                    <div className={styles.formGroup}>
+                        <input
+                            type="password"
+                            name="confirmPassword"
+                            placeholder="Confirm Password"
+                            value={formData.confirmPassword}
+                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                            className={styles.input}
+                        />
+                    </div>
 
-                {error && <div className={styles.error}>{error}</div>}
+                    {error && <div className={styles.error}>{error}</div>}
 
-                <button
-                    type="submit"
-                    className={styles.button}
-                    disabled={loading}
-                >
-                    {loading ? 'Registering...' : 'Register'}
-                </button>
+                    <button
+                        type="submit"
+                        className={styles.submitButton}
+                        disabled={loading}
+                    >
+                        {loading ? 'Registering...' : 'Register'}
+                    </button>
 
-                <div className={styles.loginLink}>
-                    Already have an account? <Link to="/login">Login here</Link>
-                </div>
-            </form>
+                    <div className={styles.loginLink}>
+                        Already have an account? <Link to="/login">Login here</Link>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
-
-
-

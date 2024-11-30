@@ -1,36 +1,32 @@
 .ratingContainer {
-    display: inline-flex;
-    flex-wrap: wrap;
-    min-width: 0;
-	width: 150px
+	display: inline-flex;
+	flex-wrap: wrap;
+	min-width: 0;
+	width: 150px;
 }
 
 .ratingIcon {
-    flex: 0 0 30%;
+	flex: 0 0 30%;
 }
 
 .rating {
-    display: inline-block;
-    flex: 0 1 50%;
-    margin: 0;
+	display: inline-block;
+	flex: 0 1 50%;
+	margin: 0;
 }
 
 .ratingCount {
-    display: inline-block;
-    flex-basis: 80%;
-    font-size: 0.8rem;
-    font-style: italic;
-    color: #666;
+	display: inline-block;
+	flex-basis: 80%;
+	font-size: 0.8rem;
+	font-style: italic;
+	color: #666;
 }
 
 .reportIcon {
 	flex: 0 0 30%;
 	color: red;
-	
 }
-
-
-
 
 .search-itinerary {
 	display: flex;
@@ -130,14 +126,21 @@
 }
 
 .itineraryCard {
+	position: relative;
 	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	padding: 15px;
 	background-color: #fff;
 	border-radius: 8px;
-	overflow: hidden;
 	box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
-	transition: transform 0.3s ease, box-shadow 0.3s ease;
-	padding: 15px;
-	align-items: center;
+}
+
+.itineraryLink {
+	text-decoration: none;
+	color: inherit;
+	display: flex;
+	width: 100%;
 }
 
 .itineraryCard:hover {
@@ -154,10 +157,8 @@
 }
 
 .itineraryInfo {
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	flex-grow: 1;
+	margin-left: 20px;
+	width: calc(100% - 170px);
 }
 
 .itineraryInfo h3 {
@@ -224,4 +225,109 @@
 	}
 }
 
+.adminButtons {
+	display: flex;
+	gap: 10px;
+	margin-top: 10px;
+	align-items: flex-start;
+	margin-left: 180px;
+}
 
+.adminButton {
+	background-color: #d9534f;
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+	font-size: 14px;
+	line-height: 1.5;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.adminButton:hover {
+	background-color: #c9302c;
+}
+
+/* Add to your existing CSS file */
+
+.modalOverlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.modalContent {
+	background: #ffffff;
+	padding: 20px 30px;
+	border-radius: 10px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	max-width: 400px;
+	width: 90%;
+	text-align: center;
+}
+
+.modalButtons {
+	display: flex;
+	gap: 10px;
+	justify-content: center;
+	margin-top: 20px;
+}
+
+.confirmButton {
+	background-color: #d9534f;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+	flex: 1;
+}
+
+.confirmButton:hover {
+	background-color: #c9302c;
+}
+
+.cancelButton {
+	background-color: #e0e0e0;
+	color: #333;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 5px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+	flex: 1;
+}
+
+.cancelButton:hover {
+	background-color: #c1c1c1;
+}
+
+.bannedBadge {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background-color: red;
+	color: white;
+	padding: 5px 10px;
+	font-size: 0.9rem;
+	font-weight: bold;
+	border-radius: 5px;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.buttonLink {
+	text-decoration: none;
+	color: inherit;
+}

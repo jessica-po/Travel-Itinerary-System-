@@ -111,6 +111,7 @@
 }
 
 .itineraryCard {
+	position: relative;
 	display: flex;
 	background-color: #fff;
 	border-radius: 8px;
@@ -173,6 +174,19 @@
 	background-color: #f1f1f1;
 	padding: 5px 10px;
 	border-radius: 5px;
+}
+
+.deleteButton {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    cursor: pointer;
+    color: red;
+    transition: transform 0.2s;
+}
+
+.deleteButton:hover {
+    transform: scale(1.1); 
 }
 
 @media (max-width: 768px) {
