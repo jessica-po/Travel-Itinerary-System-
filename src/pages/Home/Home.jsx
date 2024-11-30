@@ -66,16 +66,8 @@ export default function Home() {
         );
     }
 
-    const handleTest = () => {
-        console.log("USER:");
-        console.log(user);
-        console.log("PROFILE:");
-        console.log(userProfile);
-    }
-
     return (
         <div className="home">
-            <Button onClick={handleTest}>Log User in console (TEMPORARY)</Button>
             <Stack spacing={5}>
                 <Card>
                     <CardContent>
