@@ -313,9 +313,10 @@ export function SupabaseContextProvider({ children }) {
      * @returns error if any error occurred
      */
     const deleteRating = async (postId: string) => {
-        const { error } = await supabase.from("rating").delete().eq("post_id", postId).eq("user_id", userProfile.user_id);
-
-        return error;
+		if (userProfile) {
+        	const { error } = await supabase.from("rating").delete().eq("post_id", postId).eq("user_id", userProfile.user_id);
+        	return error;
+		} else return "Error: not user not logged in";
     };
 
 	/**
@@ -742,7 +743,7 @@ type SupabaseContextType = {
 		data: Database["public"]["Tables"]["rating"]["Update"] | null;
 		error: PostgrestError | null;
 	}>;
-	deleteRating: (post_id: string) => Promise<PostgrestError | null | undefined>;
+	deleteRating: (postId: string) => Promise<PostgrestError | "Error: not user not logged in" | null>;
 	clearReports: (post_id: string) => Promise<PostgrestError | null | undefined>;
 	banPost: (post_id: string) => Promise<PostgrestError | null | undefined>;
 	banUserId: any;
@@ -757,20 +758,21 @@ type SupabaseContextType = {
 		error: PostgrestError | null;
 	}>;
 	getDetailedReports: (post_id: string) => Promise<{
-		data:
-			| {
-					post_id: string;
-					post_name: string;
-					report_date: string;
-					reason: string;
-					user_id: string;
-					user_name: string;
-			  }[]
-			| null;
-		error: PostgrestError | null;
+		data: null;
+		error: PostgrestError;
+	} | {
+		data: {
+			post_id: string;
+			post_name: string;
+			report_date: string;
+			reason: string;
+			user_id: string;
+			user_name: string;
+		}[];
+		error: null;
 	}>;
 	deleteReport: (postId: string, userId: string) => Promise<{ error: PostgrestError | null }>;
-	deleteItinerary: (userId: any, postId: any) => Promise<{
+	deleteItinerary: (userId: string, postId: string) => Promise<{
 		data: null;
 		error: PostgrestError | null;
 	}>;
@@ -782,4 +784,5 @@ type SupabaseContextType = {
 	addComment: any;
 	getComments: any;
 	deleteComment: () => Promise<UserResponse> | undefined;
+	deleteAccount: () => Promise<UserResponse> | undefined;
 };
