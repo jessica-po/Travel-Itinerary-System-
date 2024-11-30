@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import useSupabase from "../../context/SupabaseContext";
 import styles from "./Navbar.module.css";
+import logoIcon from "../../assets/Travel Itineraries.png";
 
 export default function Navbar() {
 	const { user, userProfile, logout } = useSupabase();
@@ -18,9 +19,9 @@ export default function Navbar() {
 			<div className={styles.navbar}>
 				<nav>
 					<ul className={styles["nav-links"]}>
-						{/* <img src="" alt="" className=[styles.logo}/> - logo placeholder */}
 						<li className={`${styles["nav-item-container"]} ${styles["no-hover"]}`}>
 							<NavLink to="/" className={styles["nav-item"]}>
+								<img src={logoIcon} alt="Travel Itineraries Icon" width="40" height="40" className={styles.logoIcon} />
 								<h1 className={styles.logo}>Travel Itineraries</h1>
 							</NavLink>
 						</li>
