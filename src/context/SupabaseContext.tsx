@@ -5,6 +5,7 @@ import {
 	Session,
 	SupabaseClient,
 	User,
+	UserResponse,
 	WeakPassword,
 } from "@supabase/supabase-js";
 import React, { createContext, useContext, useEffect, useState } from "react";
@@ -533,6 +534,16 @@ export function SupabaseContextProvider({ children }) {
 		return { error };
 	});
 
+	/**
+	 * Deletes the current logged in user
+	 * @returns functions to delete the current user
+	 */
+	const deleteAccount = () => {
+		if (user && userProfile?.role === "traveller") {
+			return supabase.auth.admin.deleteUser(user.id)
+		}
+	};
+
 	return (
 		<>
 			<SupabaseContext.Provider
@@ -571,6 +582,7 @@ export function SupabaseContextProvider({ children }) {
 					addComment,
 					getComments,
 					deleteComment,
+					deleteAccount
 				}}
 			>
 				{children}
@@ -680,13 +692,11 @@ type SupabaseContextType = {
 		error: PostgrestError | null;
 	}>;
 	getPostRatings: () => Promise<{
-		data:
-			| {
-					is_good: boolean;
-					post_id: string;
-					total: number;
-			  }[]
-			| null;
+		data: {
+			is_good: boolean | null;
+			post_id: string | null;
+			total: number | null;
+		}[] | null;
 		error: PostgrestError | null;
 	}>;
 	getReports: () => Promise<{
@@ -760,9 +770,16 @@ type SupabaseContextType = {
 		error: PostgrestError | null;
 	}>;
 	deleteReport: (postId: string, userId: string) => Promise<{ error: PostgrestError | null }>;
+	deleteItinerary: (userId: any, postId: any) => Promise<{
+		data: null;
+		error: PostgrestError | null;
+	}>;
 	insertReport: (report: {
 		post_id: string;
 		user_id: string;
 		reason: string;
 	}) => Promise<{ error: PostgrestError | null }>;
+	addComment: any;
+	getComments: any;
+	deleteComment: () => Promise<UserResponse> | undefined;
 };
