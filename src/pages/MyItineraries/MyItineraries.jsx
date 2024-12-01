@@ -5,7 +5,6 @@ import useSupabase from "../../context/SupabaseContext";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from "@mui/material";
 
-
 export default function MyItineraries() {
 	const [itineraries, setItineraries] = useState([]);
 	const { getUserItineraries, user, deleteItinerary } = useSupabase();
@@ -33,8 +32,6 @@ export default function MyItineraries() {
 		};
 		loadUserItineraries();
 	}, [user]);
-
-
 
 	// Function to handle navigation to the form page
 	const handleCreateItinerary = () => {

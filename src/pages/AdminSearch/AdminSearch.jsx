@@ -213,23 +213,6 @@ export default function AdminSearch() {
 		loadItineraries();
 	};
 
-	// const confirmUnbanUser = async () => {
-	// 	try {
-	// 		const error = await unbanUserId(selectedItinerary);
-	// 		if (error) {
-	// 			console.error("Error unbanning user:", error.message);
-	// 			alert("Failed to unban user. Please try again.");
-	// 		} else {
-	// 			alert("User unbanned successfully!");
-	// 		}
-	// 	} catch (error) {
-	// 		console.error("Error unbanning user:", error);
-	// 		alert("Failed to unban user. Please try again.");
-	// 	}
-	// 	setShowUnbanUserModal(false);
-	// 	setSelectedItinerary(null);
-	// 	loadItineraries();
-	// };
 	const confirmUnbanUser = async () => {
 		console.log(`unbanning user with userId: ${selectedItinerary}`);
 		const { unbanUserAuth, unbanUser, unbanUserPosts } = unbanUserId(selectedItinerary);

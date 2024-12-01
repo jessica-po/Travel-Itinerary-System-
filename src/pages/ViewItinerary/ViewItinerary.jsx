@@ -50,17 +50,6 @@ export default function ViewItinerary() {
 			if (user) {
 				if (user.id) loadMyRating();
 			}
-			// const fetchUser = async () => {
-			//     const { user, error } = await getLoggedInUser();
-			//     if (error || !user) {
-			//         console.error("Error fetching user:", error);
-			//     } else {
-			//         setUserId(user.id);
-			//         if (userId) {loadMyRating()};
-
-			//     }
-			// };
-			// fetchUser();
 		}
 	}, [postId, user]);
 

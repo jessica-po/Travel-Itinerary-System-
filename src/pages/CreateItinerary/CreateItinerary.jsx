@@ -16,21 +16,7 @@ export default function CreateItinerary() {
   const [isFamilyFriendly, setIsFamilyFriendly] = useState(false);
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState(null);
-  // const [userId, setUserId] = useState(null);
   const { uploadImage, user, insertEvents, insertItinerary } = useSupabase();
-
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     if (error || !user) {
-  //       console.error("Error fetching user:", error);
-  //       alert("Please log in to create an itinerary.");
-  //       navigate("/login");
-  //     } else {
-  //       setUserId(user.id);
-  //     }
-  //   };
-  //   fetchUser();
-  // }, [getLoggedInUser, navigate]);
 
   const handleScheduleChange = (index, field, value) => {
     const updatedSchedule = [...schedule];

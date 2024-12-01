@@ -2,8 +2,6 @@ import { Outlet } from "react-router-dom";
 import styles from './root.module.css';
 import Navbar from "../components/Navbar/Navbar";
 
-
-
 export default function Root() {
     return (
         <>
