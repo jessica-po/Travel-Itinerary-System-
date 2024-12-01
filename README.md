@@ -1,19 +1,31 @@
 # f2024-cps731-team3
-Travel Itinerary system code repo for team 3 in cps731.
+# Project Name: Travel Itineraries
 
-# React + Vite
+## Team Members
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+| Name             | Student ID  | Email                          |
+|------------------|-------------|--------------------------------|
+| Stanley Chow     | 501 022 142 | stanley.chow@torontomu.ca      |
+| Matthew Martin   | 501 024 890 | matthew.g.martin@torontomu.ca  |
+| Jessica Pourleyli| 501 168 095 | jessica.pourleyli@torontomu.ca |
+| Iman Qureshi     | 501 090 599 | i1qureshi@torontomu.ca         |
+| Brandon Ton      | 501 175 042 | brandon.ton@torontomu.ca       |
 
-Currently, two official plugins are available:
+## Project Description
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Travel Itineraries is a web application designed to help travellers with the difficulties of planning a trip by creating a space to create and share itineraries, saving time and hassle from trip planning and allowing travellers to engage during their trip planning. 
 
 ## Package Installation
-- npm install
-- npm install @supabase/supabase-js
-- npm run dev
+- Clone repository: git clone https://github.com/Stanley-C-02/f2024-cps731-team3.git
+- Install dependencies: npm install
+- Install supabase dependency (if not already): npm install @supabase/supabase-js
+- Run the application: npm run dev
+
+## Technologies Used 
+- Front-end: React.js, CSS
+- Back-end: Javascript
+- Database: Supabase
+- Version Control: Git, GitHub
 
 ## IMPORTANT
 
