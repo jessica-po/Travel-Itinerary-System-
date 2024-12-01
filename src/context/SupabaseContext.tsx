@@ -380,21 +380,6 @@ export function SupabaseContextProvider({ children }) {
 	 * @param userId ID of the user to unban
 	 * @returns an object with unbanUserAuth, unbanUser, and unbanUserPosts async functions
 	 */
-	// const unbanUserId = (userId: string) => {
-	// 	if (userProfile?.role === "admin") {
-	// 		return {
-	// 			unbanUserAuth: supabase.auth.admin.updateUserById(userId, { ban_duration: undefined }),
-	// 			unbanUser: supabase.from("profile").update({ profile_status: "normal" }).eq("user_id", userId),
-	// 			unbanUserPosts: supabase.from("itinerary").update({ itinerary_status: "normal" }).eq("user_id", userId),
-	// 		};
-	// 	}
-	// };
-
-	/**
-	 * Unbans a specific user and all their posts
-	 * @param userId ID of the user to unban
-	 * @returns an object with unbanUserAuth, unbanUser, and unbanUserPosts async functions
-	 */
 	const unbanUserId = (user_id: string) => {
 		if (userProfile?.role === "admin") {
 			return {

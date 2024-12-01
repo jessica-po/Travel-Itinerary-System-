@@ -14,3 +14,11 @@ Currently, two official plugins are available:
 - npm install
 - npm install @supabase/supabase-js
 - npm run dev
+
+## IMPORTANT
+
+The supabase.admin.token.jsx is left blank, since it is a secret key that should only be locally used to test this system. Not having this key prevents the following features of the system:
+
+- Deleting own account
+- Banning a user
+- Unbanning a user
