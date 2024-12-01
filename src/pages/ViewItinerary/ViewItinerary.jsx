@@ -247,8 +247,7 @@ export default function ViewItinerary() {
 		});
 
 		const title = itinerary.post_name || itinerary.destination;
-		const duration = sortedEvents[sortedEvents.length - 1]?.day - sortedEvents[0]?.day;
-		+1;
+		const duration = sortedEvents[sortedEvents.length - 1]?.day - sortedEvents[0]?.day + 1;
 		const description =
 			`<h1>${title}</h1>` +
 			`<p>Destination: <b>${itinerary.destination}</b></p>` +
@@ -367,6 +366,9 @@ export default function ViewItinerary() {
 			<div className={styles.viewItinerary}>
 				<div className={styles.buttonGroupContainer}>
 					<div className={styles.leftButtonGroup}>
+						<Button component={Link} to="/search-itinerary" variant="contained" color="secondary">
+							&lt; Back to Itineraries
+						</Button>
 						{(!userProfile || userProfile?.role === "traveller") && (
 							<Button onClick={handleSaveItinerary}>Save Itinerary</Button>
 						)}

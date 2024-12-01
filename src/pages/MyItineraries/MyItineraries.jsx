@@ -32,7 +32,7 @@ export default function MyItineraries() {
 			}
 		};
 		loadUserItineraries();
-	}, [user, getUserItineraries]);
+	}, [user]);
 
 
 
@@ -171,6 +171,7 @@ const cancelDelete = () => {
         </div>
         <div className={styles.itineraryContent}>
           <div className={styles.itineraryList}>
+            { filteredItineraries.length === 0 && "You have not yet posted any itineraries. Post one now!"}
             {filteredItineraries.map((itinerary) => (
               <Link
                 key={itinerary.post_id}

@@ -140,6 +140,7 @@ export default function SearchItinerary() {
 				</div>
 				<div className={styles.itineraryContent}>
 					<div className={styles.itineraryList}>
+						{ filteredItineraries.length === 0 && "No itineraries available. Broaden your search filters!" }
 						{filteredItineraries.map((itinerary) => (
 							<Link key={itinerary.post_id} to={`/view-itinerary/${itinerary.post_id}`}>
 								<div key={itinerary.post_id} className={styles.itineraryCard}>

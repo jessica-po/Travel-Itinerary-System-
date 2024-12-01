@@ -28,6 +28,10 @@ export default function Comments() {
     };
 
     const handleAddComment = async () => {
+		if (!user) {
+			alert("You must be logged in to comment.");
+			return;
+		}
         if (!newComment.trim()) {
             alert("Comment cannot be empty.");
             return;

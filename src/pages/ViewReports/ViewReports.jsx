@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import useSupabase from "../../context/SupabaseContext";
 import styles from "./ViewReports.module.css";
+import { Button } from "@mui/material";
 
 export default function ViewReports() {
 	const params = useParams();
@@ -83,6 +84,9 @@ export default function ViewReports() {
 
 	return (
 		<div className={styles.viewReports}>
+			<Button component={Link} to="/admin-search" variant="contained" color="secondary" size="small">
+				&lt; Back to Reported Itineraries
+			</Button>
 			<h2>{`Reports for Post: ${postTitle}`}</h2>
 			<p className={styles.postId}>{`Post ID: ${postId}`}</p>
 			<div className={styles.reportList}>
