@@ -1,4 +1,3 @@
-# f2024-cps731-team3
 # Project Name: Travel Itineraries
 
 ## Team Members
