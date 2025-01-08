@@ -15,7 +15,7 @@
 Travel Itineraries is a web application designed to help travellers with the difficulties of planning a trip by creating a space to create and share itineraries, saving time and hassle from trip planning and allowing travellers to engage during their trip planning. 
 
 ## Package Installation
-- Clone repository: git clone https://github.com/Stanley-C-02/f2024-cps731-team3.git
+- Clone repository: git clone https://github.com/jessica-po/Travel-Itinerary-System-.git
 - Install dependencies: npm install
 - Install supabase dependency (if not already): npm install @supabase/supabase-js
 - Run the application: npm run dev
