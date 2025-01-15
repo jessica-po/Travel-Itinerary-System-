@@ -1,2 +1,2 @@
-export const url = "https://dnchewmkolgjlitgxxui.supabase.co";
-export const publicAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuY2hld21rb2xnamxpdGd4eHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEzNDA4NzcsImV4cCI6MjA0NjkxNjg3N30.YbEkcVK1-m5qen6udcLC9Op3weQA6DD9nygqQ5cvOwo";
+export const url = "https://fojsmfwpldavxjcqiolu.supabase.co";
+export const publicAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvanNtZndwbGRhdnhqY3Fpb2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NzM0NDAsImV4cCI6MjA1MjU0OTQ0MH0.5igUbpYQIayUE743XqXQzSjLXbUT2CSJ_5liJCAnBMs";
